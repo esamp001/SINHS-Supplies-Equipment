@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SINHS — Create account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1A4494}a:hover{color:#0F2E63}
+input:focus,select:focus{outline:2px solid #1F4FA8;outline-offset:1px;border-color:#1F4FA8}
+button:focus-visible,a:focus-visible{outline:2px solid #1F4FA8;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; font-family: Inter, system-ui, sans-serif; background: #F5F7FA; color: #0F172A">
+<section style="flex: 1 1 420px; box-sizing: border-box; background: #123A7A; color: #FFFFFF; padding: 56px; display: flex; flex-direction: column; justify-content: space-between; gap: 48px">
+<div style="display: flex; align-items: center; gap: 16px">
+<img src="/_blob/8c59172d0716dc393672cb7248f86078" alt="San Isidro National High School seal" style="width: 72px; height: 72px; flex-shrink: 0; border-radius: 50%; background: #FFFFFF; object-fit: contain">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 0.02em">SINHS</span>
+<span style="font-size: 14px; color: rgba(255,255,255,0.8)">Supplies &amp; Equipment Management</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 24px; max-width: 460px">
+<span aria-hidden="true" style="display: block; width: 56px; height: 4px; border-radius: 2px; background: #E8B71A"></span>
+<h1 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 40px; line-height: 1.1; font-weight: 600">How account approval works</h1>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 18px">
+<li style="display: flex; gap: 14px; align-items: flex-start">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: #E8B71A; color: #0F172A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">1</span>
+<span style="font-size: 16px; line-height: 1.5; color: rgba(255,255,255,0.88)">You fill in your details and your school position.</span>
+</li>
+<li style="display: flex; gap: 14px; align-items: flex-start">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: #E8B71A; color: #0F172A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">2</span>
+<span style="font-size: 16px; line-height: 1.5; color: rgba(255,255,255,0.88)">An administrator reviews it, confirms your position and assigns your role.</span>
+</li>
+<li style="display: flex; gap: 14px; align-items: flex-start">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: #E8B71A; color: #0F172A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">3</span>
+<span style="font-size: 16px; line-height: 1.5; color: rgba(255,255,255,0.88)">You get an in-app notice and can sign in once approved.</span>
+</li>
+</ol>
+</div>
+<p style="margin: 0; font-size: 13px; color: rgba(255,255,255,0.72)">San Isidro National High School · Malilipot, Albay · Est. 2000</p>
+</section>
+<main style="flex: 1 1 520px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 48px 24px">
+<div style="width: 100%; max-width: 520px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 40px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 12px 32px rgba(15,23,42,0.06)">
+<sc-if value="{{notSent}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 30px; font-weight: 600">Create an account</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #475569">For SINHS personnel. Your role is assigned by an administrator.</p>
+</div>
+<form style="display: flex; flex-direction: column; gap: 18px; margin: 0">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="reg-name" style="font-size: 14px; font-weight: 600">Full name</label>
+<input id="reg-name" type="text" autocomplete="name" placeholder="First name, middle initial, last name" style="height: 46px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 10px; padding: 0 14px; font-size: 15px; font-family: inherit; color: #0F172A; background: #FFFFFF">
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="reg-user" style="font-size: 14px; font-weight: 600">Username</label>
+<input id="reg-user" type="text" autocomplete="username" placeholder="Choose a username" style="height: 46px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 10px; padding: 0 14px; font-size: 15px; font-family: inherit; color: #0F172A; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="reg-email" style="font-size: 14px; font-weight: 600">Email</label>
+<input id="reg-email" type="email" autocomplete="email" placeholder="name@example.com" style="height: 46px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 10px; padding: 0 14px; font-size: 15px; font-family: inherit; color: #0F172A; background: #FFFFFF">
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="reg-pos" style="font-size: 14px; font-weight: 600">Position</label>
+<select id="reg-pos" style="height: 46px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 10px; padding: 0 12px; font-size: 15px; font-family: inherit; color: #0F172A; background: #FFFFFF">
+<option>Select your position</option>
+<option>Principal</option>
+<option>Property Custodian</option>
+<option>Teacher I</option>
+<option>Teacher II</option>
+<option>Teacher III</option>
+<option>Department Head</option>
+<option>[Other positions]</option>
+</select>
+<span style="font-size: 13px; color: #64748B">Your position is shown on your profile. It doesn't decide what you can access.</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="reg-pw" style="font-size: 14px; font-weight: 600">Password</label>
+<input id="reg-pw" type="password" autocomplete="new-password" placeholder="At least 8 characters" style="height: 46px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 10px; padding: 0 14px; font-size: 15px; font-family: inherit; color: #0F172A; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="reg-pw2" style="font-size: 14px; font-weight: 600">Confirm password</label>
+<input id="reg-pw2" type="password" autocomplete="new-password" placeholder="Re-enter password" style="height: 46px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 10px; padding: 0 14px; font-size: 15px; font-family: inherit; color: #0F172A; background: #FFFFFF">
+</div>
+</div>
+<button type="button" onClick="{{submit}}" style="height: 48px; border: 0; border-radius: 10px; background: #1F4FA8; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer">Submit for approval</button>
+</form>
+<p style="margin: 0; font-size: 14px; color: #475569">Already have an account? <a href="Main.dc.html" style="font-weight: 600; text-decoration: none">Sign in</a></p>
+</div>
+</sc-if>
+<sc-if value="{{sent}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start">
+<span style="padding: 4px 10px; border-radius: 999px; background: #FCF3D6; color: #5A3E00; font-size: 12px; font-weight: 600">Pending approval</span>
+<h2 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 28px; font-weight: 600">Your account was submitted</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">An administrator will review it and assign your role. Until then, signing in will show that your account is pending.</p>
+<a href="Main.dc.html" style="display: flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #1F4FA8; color: #FFFFFF; font-size: 15px; font-weight: 600; text-decoration: none">Back to sign in</a>
+<button type="button" onClick="{{again}}" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: #1A4494; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Show the form again</button>
+</div>
+</sc-if>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sent: false }; }
+  renderVals() {
+    const sent = this.state.sent;
+    return {
+      sent: sent,
+      notSent: !sent,
+      submit: () => this.setState({ sent: true }),
+      again: () => this.setState({ sent: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

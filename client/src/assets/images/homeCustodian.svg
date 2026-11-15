@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" fill="none">
+<circle cx="160" cy="100" r="92" fill="#D3DFF4"/>
+<ellipse cx="160" cy="186" rx="140" ry="8" fill="#C3D3EE"/>
+<rect x="150" y="30" width="6" height="154" rx="2" fill="#123A7A"/>
+<rect x="282" y="30" width="6" height="154" rx="2" fill="#123A7A"/>
+<rect x="150" y="76" width="138" height="5" rx="2" fill="#123A7A"/>
+<rect x="150" y="128" width="138" height="5" rx="2" fill="#123A7A"/>
+<rect x="150" y="178" width="138" height="5" rx="2" fill="#123A7A"/>
+<rect x="164" y="46" width="36" height="30" rx="3" fill="#E8B71A"/>
+<rect x="164" y="58" width="36" height="5" fill="#C99A0E"/>
+<rect x="206" y="54" width="28" height="22" rx="3" fill="#F6D77A"/>
+<rect x="242" y="44" width="9" height="32" rx="2" fill="#1F4FA8"/>
+<rect x="253" y="48" width="9" height="28" rx="2" fill="#8FB3E8"/>
+<rect x="264" y="44" width="9" height="32" rx="2" fill="#D94A2B"/>
+<rect x="164" y="108" width="50" height="7" rx="2" fill="#FFFFFF"/>
+<rect x="164" y="115" width="50" height="7" rx="2" fill="#EEF2F8"/>
+<rect x="164" y="122" width="50" height="6" rx="2" fill="#FFFFFF"/>
+<rect x="222" y="98" width="54" height="30" rx="3" fill="#E8B71A"/>
+<rect x="222" y="110" width="54" height="5" fill="#C99A0E"/>
+<rect x="166" y="150" width="44" height="28" rx="4" fill="#8FB3E8"/>
+<circle cx="188" cy="164" r="7" fill="#123A7A"/>
+<rect x="220" y="146" width="56" height="32" rx="3" fill="#F6D77A"/>
+<rect x="64" y="128" width="11" height="54" rx="5" fill="#0B2552"/>
+<rect x="80" y="128" width="11" height="54" rx="5" fill="#0B2552"/>
+<rect x="58" y="68" width="40" height="70" rx="15" fill="#1F4FA8"/>
+<circle cx="78" cy="48" r="16" fill="#C98E63"/>
+<path d="M62 46c0-12 8-18 17-18s16 6 15 16c-5-5-12-7-17-5-6 1-10 4-15 7z" fill="#0F172A"/>
+<rect x="94" y="84" width="30" height="40" rx="4" fill="#FFFFFF"/>
+<rect x="103" y="80" width="12" height="7" rx="2" fill="#E8B71A"/>
+<path d="M100 98l3 3 6-6M100 112l3 3 6-6" stroke="#1F4FA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="112" y="96" width="8" height="4" rx="2" fill="#8FB3E8"/>
+<rect x="112" y="110" width="8" height="4" rx="2" fill="#8FB3E8"/>
+<path d="M96 88c-4 8-4 16 0 22" stroke="#1F4FA8" stroke-width="9" stroke-linecap="round"/>
+<path d="M24 182V120h6M24 182h34" stroke="#123A7A" stroke-width="5" stroke-linecap="round"/>
+<rect x="30" y="148" width="26" height="30" rx="3" fill="#E8B71A"/>
+<circle cx="30" cy="184" r="6" fill="#123A7A"/>
+<circle cx="300" cy="22" r="5" fill="#E8B71A"/>
+</svg>

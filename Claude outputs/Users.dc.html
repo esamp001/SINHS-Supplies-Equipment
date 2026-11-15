@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SINHS — Users and roles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1A4494}a:hover{color:#0F2E63}
+input:focus,select:focus{outline:2px solid #1F4FA8;outline-offset:1px;border-color:#1F4FA8}
+button:focus-visible,a:focus-visible{outline:2px solid #1F4FA8;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: Inter, system-ui, sans-serif; background: #F5F7FA; color: #0F172A; display: flex; flex-direction: column">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; background: #123A7A; color: #FFFFFF">
+<div style="display: flex; align-items: center; gap: 12px">
+<img src="/_blob/8c59172d0716dc393672cb7248f86078" alt="San Isidro National High School seal" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: #FFFFFF; object-fit: contain">
+<div style="display: flex; flex-direction: column">
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 18px; font-weight: 700">SINHS</span>
+<span style="font-size: 12px; color: rgba(255,255,255,0.8)">Supplies &amp; Equipment</span>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 16px">
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">[Full name]</span>
+<span style="font-size: 12px; color: rgba(255,255,255,0.8)">Principal · Admin</span>
+</div>
+<a href="Main.dc.html" style="display: flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); color: #FFFFFF; font-size: 13px; font-weight: 600; text-decoration: none">Log out</a>
+</div>
+</header>
+<div style="display: flex; flex-wrap: wrap; flex: 1 1 auto">
+<nav aria-label="Main" style="flex: 1 1 220px; max-width: 260px; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #64748B; padding: 0 12px 6px">Inventory</span>
+<a href="HomeAdmin.dc.html" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Dashboard</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Items</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Stock transactions</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Requests</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Borrowing &amp; returns</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Item types &amp; fields</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Reports</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #64748B; padding: 0 12px 6px">Administration</span>
+<a href="#" aria-current="page" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; background: #E8EEF9; color: #1A4494; font-size: 14px; font-weight: 600; text-decoration: none">Users &amp; accounts</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Master data</a>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: #334155; font-size: 14px; font-weight: 500; text-decoration: none">Audit log</a>
+</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px; display: flex; flex-direction: column; gap: 24px">
+<section style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; color: #64748B">Administration / Users &amp; accounts</span>
+<h1 style="margin: 0; font-family: 'Space Grotesk', Inter, sans-serif; font-size: 32px; font-weight: 600">Users &amp; roles</h1>
+<p style="margin: 0; font-size: 15px; color: #475569">Approve self-registered personnel, assign roles and manage accounts. Only Admins can open this page.</p>
+</section>
+<div role="tablist" aria-label="Users and roles" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #E2E8F0">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="min-height: 44px; padding: 0 16px; border: 0; border-bottom: 3px solid {{t.bd}}; margin-bottom: -1px; background: transparent; color: {{t.fg}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{t.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{showPending}}" hint-placeholder-val="{{ true }}">
+<section aria-label="Pending registrations" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; display: flex; flex-direction: column">
+<div style="padding: 16px 24px; border-bottom: 1px solid #E2E8F0; font-size: 14px; color: #475569">New accounts start with no role. Confirm the position, choose a role, then approve. A rejection needs a reason.</div>
+<div style="overflow-x: auto">
+<div style="min-width: 960px">
+<div style="display: grid; grid-template-columns: minmax(220px, 2fr) minmax(170px, 1.2fr) minmax(150px, 1fr) minmax(110px, 0.8fr) minmax(250px, 1.6fr); gap: 16px; padding: 10px 24px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #475569">
+<span>Person</span><span>Position</span><span>Role</span><span>Registered</span><span>Decision</span>
+</div>
+<sc-for list="{{pending}}" as="p" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: minmax(220px, 2fr) minmax(170px, 1.2fr) minmax(150px, 1fr) minmax(110px, 0.8fr) minmax(250px, 1.6fr); gap: 16px; align-items: center; padding: 14px 24px; border-bottom: 1px solid #F1F5F9">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">[Full name]</span>
+<span style="font-size: 13px; color: #64748B">[username] · [email]</span>
+</div>
+<select aria-label="Position" disabled="{{p.done}}" style="height: 40px; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 10px; font-family: inherit; font-size: 14px; color: #0F172A; background: #FFFFFF">
+<option>{{p.position}}</option>
+<option>Principal</option>
+<option>Property Custodian</option>
+<option>Teacher I</option>
+<option>Teacher III</option>
+</select>
+<select aria-label="Role" value="{{p.role}}" onChange="{{p.setRole}}" disabled="{{p.done}}" style="height: 40px; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 10px; font-family: inherit; font-size: 14px; color: #0F172A; background: #FFFFFF">
+<option value="staff">Staff</option>
+<option value="custodian">Custodian</option>
+<option value="admin">Admin</option>
+</select>
+<span style="font-size: 13px; color: #475569">[date]</span>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<sc-if value="{{p.isPending}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 8px">
+<button type="button" onClick="{{p.approve}}" style="min-height: 40px; padding: 0 14px; border: 0; border-radius: 8px; background: #1F4FA8; color: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Approve</button>
+<button type="button" onClick="{{p.startReject}}" style="min-height: 40px; padding: 0 14px; border: 1px solid #CBD5E1; border-radius: 8px; background: #FFFFFF; color: #9B1C1C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Reject</button>
+</div>
+</sc-if>
+<sc-if value="{{p.isRejecting}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%">
+<input type="text" aria-label="Reason for rejection" placeholder="Reason (required)" style="flex: 1 1 140px; height: 40px; box-sizing: border-box; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 10px; font-family: inherit; font-size: 13px">
+<button type="button" onClick="{{p.reject}}" style="min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: #9B1C1C; color: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Confirm</button>
+<button type="button" onClick="{{p.cancel}}" style="min-height: 40px; padding: 0 10px; border: 0; background: transparent; color: #475569; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Cancel</button>
+</div>
+</sc-if>
+<sc-if value="{{p.done}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="padding: 3px 10px; border-radius: 999px; background: {{p.tagBg}}; color: {{p.tagFg}}; font-size: 12px; font-weight: 600">{{p.tag}}</span>
+<button type="button" onClick="{{p.undo}}" style="min-height: 40px; padding: 0 6px; border: 0; background: transparent; color: #1A4494; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Undo</button>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{showUsers}}" hint-placeholder-val="{{ false }}">
+<section aria-label="All users" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; display: flex; flex-direction: column">
+<sc-if value="{{resetNote}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="margin: 16px 24px 0; padding: 12px 14px; border-radius: 10px; background: #E8EEF9; color: #123A7A; font-size: 14px">A temporary password was set. The user must change it the next time they sign in.</div>
+</sc-if>
+<div style="overflow-x: auto">
+<div style="min-width: 900px">
+<div style="display: grid; grid-template-columns: minmax(220px, 2fr) minmax(160px, 1.2fr) minmax(110px, 0.8fr) minmax(110px, 0.8fr) minmax(240px, 1.6fr); gap: 16px; padding: 10px 24px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #475569">
+<span>Person</span><span>Position</span><span>Role</span><span>Status</span><span>Actions</span>
+</div>
+<sc-for list="{{users}}" as="u" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: minmax(220px, 2fr) minmax(160px, 1.2fr) minmax(110px, 0.8fr) minmax(110px, 0.8fr) minmax(240px, 1.6fr); gap: 16px; align-items: center; padding: 14px 24px; border-bottom: 1px solid #F1F5F9">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">[Full name]</span>
+<span style="font-size: 13px; color: #64748B">[username] · last sign-in [date]</span>
+</div>
+<span style="font-size: 14px; color: #334155">{{u.position}}</span>
+<span style="justify-self: start; padding: 3px 10px; border-radius: 6px; background: #F1F5F9; color: #123A7A; font-size: 12px; font-weight: 700">{{u.role}}</span>
+<span style="justify-self: start; padding: 3px 10px; border-radius: 999px; background: {{u.bg}}; color: {{u.fg}}; font-size: 12px; font-weight: 600">{{u.status}}</span>
+<div style="display: flex; flex-wrap: wrap; gap: 4px">
+<button type="button" style="min-height: 40px; padding: 0 10px; border: 0; background: transparent; color: #1A4494; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Change role</button>
+<button type="button" onClick="{{u.reset}}" style="min-height: 40px; padding: 0 10px; border: 0; background: transparent; color: #1A4494; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Reset password</button>
+<button type="button" style="min-height: 40px; padding: 0 10px; border: 0; background: transparent; color: #9B1C1C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">{{u.toggleLabel}}</button>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{showMatrix}}" hint-placeholder-val="{{ false }}">
+<section aria-label="Role permissions" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; display: flex; flex-direction: column">
+<div style="padding: 16px 24px; border-bottom: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">What each role can do</h2>
+<p style="margin: 0; font-size: 14px; color: #475569">The three roles are fixed. A person's position (Principal, Teacher I…) is a label only and never changes access.</p>
+</div>
+<div style="overflow-x: auto">
+<div style="min-width: 640px">
+<div style="display: grid; grid-template-columns: minmax(300px, 3fr) repeat(3, minmax(100px, 1fr)); padding: 10px 24px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #475569">
+<span>Capability</span><span style="text-align: center">Admin</span><span style="text-align: center">Custodian</span><span style="text-align: center">Staff</span>
+</div>
+<sc-for list="{{caps}}" as="c" hint-placeholder-count="8">
+<div style="display: grid; grid-template-columns: minmax(300px, 3fr) repeat(3, minmax(100px, 1fr)); align-items: center; padding: 12px 24px; border-bottom: 1px solid #F1F5F9">
+<span style="font-size: 14px">{{c.label}}</span>
+<sc-for list="{{c.cells}}" as="x" hint-placeholder-count="3">
+<div style="display: flex; justify-content: center; align-items: center; gap: 6px">
+<sc-if value="{{x.yes}}" hint-placeholder-val="{{ true }}">
+<svg role="img" aria-label="{{x.aria}}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F4FA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+</sc-if>
+<sc-if value="{{x.no}}" hint-placeholder-val="{{ false }}">
+<span aria-label="{{x.aria}}" style="font-size: 14px; color: #94A3B8">—</span>
+</sc-if>
+<sc-if value="{{x.note}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 11px; font-weight: 600; color: #5A3E00">{{x.note}}</span>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+<p style="margin: 0; padding: 16px 24px; font-size: 13px; line-height: 1.5; color: #475569">Nobody can approve their own request. Every release of a supply or piece of equipment needs a request approved by a Custodian first.</p>
+</section>
+</sc-if>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+const TABS = [['pending', 'Pending registrations'], ['users', 'All users'], ['matrix', 'Role permissions']];
+const STATUS = { Active: ['#E3F4E8', '#1E6B34'], Deactivated: ['#F1F5F9', '#475569'] };
+const USERS = [
+  ['Principal', 'Admin', 'Active'],
+  ['Property Custodian', 'Custodian', 'Active'],
+  ['Teacher III', 'Staff', 'Active'],
+  ['Teacher I', 'Staff', 'Deactivated']
+];
+const CAPS = [
+  ['View available items', 'yes', 'yes', 'yes'],
+  ['Create and cancel own supply and borrow requests', 'yes', 'yes', 'yes'],
+  ['View own request and borrow history', 'yes', 'yes', 'yes'],
+  ['Approve or reject requests (incl. partial approval)', 'fallback', 'yes', 'no'],
+  ['Release approved items', 'fallback', 'yes', 'no'],
+  ['Issue and receive borrowed equipment', 'fallback', 'yes', 'no'],
+  ['Manage items and stock (stock-in, adjustments)', 'fallback', 'yes', 'no'],
+  ['Manage item types and custom fields', 'yes', 'yes', 'no'],
+  ['Reports and exports (Excel, PDF)', 'yes', 'yes', 'no'],
+  ['Approve or reject self-registered accounts', 'yes', 'no', 'no'],
+  ['Manage users, roles and password resets', 'yes', 'no', 'no'],
+  ['Master data (categories, units, locations, positions)', 'yes', 'no', 'no'],
+  ['Audit log (read-only)', 'yes', 'no', 'no']
+];
+const ROLE_NAMES = ['Admin', 'Custodian', 'Staff'];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'pending',
+      reset: false,
+      rows: [
+        { position: 'Teacher I', role: 'staff', st: 'pending' },
+        { position: 'Property Custodian', role: 'custodian', st: 'pending' },
+        { position: 'Teacher III', role: 'staff', st: 'pending' }
+      ]
+    };
+  }
+  setRow(i, patch) {
+    const rows = this.state.rows.map((r, j) => (j === i ? Object.assign({}, r, patch) : r));
+    this.setState({ rows: rows });
+  }
+  renderVals() {
+    const tab = this.state.tab;
+    return {
+      tabs: TABS.map(([id, label]) => ({
+        label: label,
+        sel: tab === id ? 'true' : 'false',
+        bd: tab === id ? '#1F4FA8' : 'transparent',
+        fg: tab === id ? '#1A4494' : '#475569',
+        pick: () => this.setState({ tab: id })
+      })),
+      showPending: tab === 'pending',
+      showUsers: tab === 'users',
+      showMatrix: tab === 'matrix',
+      resetNote: this.state.reset,
+      pending: this.state.rows.map((r, i) => {
+        const roleName = { staff: 'Staff', custodian: 'Custodian', admin: 'Admin' }[r.role];
+        const approved = r.st === 'approved';
+        return {
+          position: r.position,
+          role: r.role,
+          isPending: r.st === 'pending',
+          isRejecting: r.st === 'rejecting',
+          done: approved || r.st === 'rejected',
+          tag: approved ? 'Approved as ' + roleName : 'Rejected',
+          tagBg: approved ? '#E8EEF9' : '#FDE8E8',
+          tagFg: approved ? '#1A4494' : '#9B1C1C',
+          setRole: (e) => this.setRow(i, { role: e.target.value }),
+          approve: () => this.setRow(i, { st: 'approved' }),
+          startReject: () => this.setRow(i, { st: 'rejecting' }),
+          reject: () => this.setRow(i, { st: 'rejected' }),
+          cancel: () => this.setRow(i, { st: 'pending' }),
+          undo: () => this.setRow(i, { st: 'pending' })
+        };
+      }),
+      users: USERS.map((u) => ({
+        position: u[0],
+        role: u[1],
+        status: u[2],
+        bg: STATUS[u[2]][0],
+        fg: STATUS[u[2]][1],
+        toggleLabel: u[2] === 'Active' ? 'Deactivate' : 'Reactivate',
+        reset: () => this.setState({ reset: true })
+      })),
+      caps: CAPS.map((c) => ({
+        label: c[0],
+        cells: [1, 2, 3].map((k) => ({
+          yes: c[k] !== 'no',
+          no: c[k] === 'no',
+          note: c[k] === 'fallback' ? 'Fallback' : '',
+          aria: ROLE_NAMES[k - 1] + (c[k] === 'no' ? ': not allowed' : c[k] === 'fallback' ? ': allowed as fallback' : ': allowed')
+        }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
