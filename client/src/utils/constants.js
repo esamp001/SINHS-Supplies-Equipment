@@ -14,6 +14,12 @@ export const SCHOOL = Object.freeze({
 /** Application timezone (AGENTS.md §8). */
 export const APP_TIMEZONE = 'Asia/Manila';
 
+/** Borrowed items due within this many days show as "Due soon" (matches the server). */
+export const DUE_SOON_DAYS = 2;
+
+/** Unread notification polling interval in milliseconds (AGENTS.md §9). */
+export const NOTIFICATION_POLL_MS = 60000;
+
 /** Minimum password length for registration and password changes. */
 export const MIN_PASSWORD_LENGTH = 8;
 
@@ -69,6 +75,7 @@ export const STATUS_TAGS = Object.freeze({
   cancelled: { label: 'Cancelled', color: 'default' },
   overdue: { label: 'Overdue', color: 'red' },
   dueSoon: { label: 'Due soon', color: 'gold' },
+  borrowed: { label: 'Borrowed', color: 'blue' },
   lowStock: { label: 'Low stock', color: 'red' },
   active: { label: 'Active', color: 'green' },
   deactivated: { label: 'Deactivated', color: 'default' },

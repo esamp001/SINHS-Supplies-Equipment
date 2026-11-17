@@ -1,21 +1,131 @@
+import dayjs from 'dayjs';
+
 import homeAdminUrl from '../../assets/images/homeAdmin.svg';
 import homeCustodianUrl from '../../assets/images/homeCustodian.svg';
 import homeStaffUrl from '../../assets/images/homeStaff.svg';
 import { PATHS } from '../../routes/navConfig.js';
-import { ROLES } from '../../utils/constants.js';
+import { DUE_SOON_DAYS, ROLES } from '../../utils/constants.js';
+import { formatDate, formatDateOnly } from '../../utils/dateFormat.js';
+
+/**
+ * @typedef {import('../../utils/types.js').PanelRow} PanelRow
+ */
 
 /**
  * @typedef {Object} DashboardRoleConfig
  * @property {string} description - Text under the greeting.
  * @property {string} illustrationUrl - Hero illustration.
  * @property {Array<{ label: string, path: string }>} actions - Quick actions; the first is primary.
- * @property {Array<{ key: string, label: string, value: number, note: string }>} stats - Stat cards.
- * @property {Array<{ key: string, title: string, path: string, rows: import('../../utils/types.js').PanelRow[] }>} panels - List panels.
+ * @property {Array<{ key: string, label: string, note: string }>} stats - Stat cards; `key` matches `summary.stats`.
+ * @property {Array<{ key: string, title: string, path: string, toRow: (record: Object) => PanelRow }>} panels - List panels; `key` matches `summary.panels`.
  */
 
+/** Display names for request types. */
+const REQUEST_TYPE_LABELS = { supply: 'Supply', borrow: 'Borrow' };
+
 /**
- * Per-role dashboard from the design prototype, with static sample numbers and rows.
- * Each role only sees its own dashboard (role-based access).
+ * Decides the tag for a borrowed item: overdue, due soon, or simply borrowed.
+ * @param {string} dueAt - ISO due date.
+ * @returns {'overdue' | 'dueSoon' | 'borrowed'} Status tag key.
+ */
+const getBorrowStatus = (dueAt) => {
+  const due = dayjs(dueAt);
+
+  if (due.isBefore(dayjs())) {
+    return 'overdue';
+  }
+
+  if (due.isBefore(dayjs().add(DUE_SOON_DAYS, 'day'))) {
+    return 'dueSoon';
+  }
+
+  return 'borrowed';
+};
+
+/**
+ * Pending registration → row (Admin).
+ * @param {{ id: number, fullName: string, positionName: string, createdAt: string }} user - Pending user.
+ * @returns {PanelRow} Row.
+ */
+const toPendingAccountRow = (user) => ({
+  id: user.id,
+  main: user.fullName,
+  sub: `${user.positionName} · registered ${formatDate(user.createdAt)}`,
+  status: 'pending',
+});
+
+/**
+ * Low-stock item → row (Admin).
+ * @param {{ id: number, name: string, quantityOnHand: number, reorderLevel: number, unitName: string }} item - Item.
+ * @returns {PanelRow} Row.
+ */
+const toLowStockRow = (item) => ({
+  id: item.id,
+  main: item.name,
+  sub: `${item.quantityOnHand} ${item.unitName} left · reorder at ${item.reorderLevel}`,
+  status: 'lowStock',
+});
+
+/**
+ * Request awaiting review or release → row (Custodian).
+ * @param {{ id: number, requestType: string, status: string, requesterName: string, itemSummary: string | null, neededAt: string | null }} request - Request.
+ * @returns {PanelRow} Row.
+ */
+const toReviewRequestRow = (request) => {
+  const neededText = request.neededAt
+    ? ` · needed ${formatDateOnly(request.neededAt, 'MMM D')}`
+    : '';
+
+  return {
+    id: request.id,
+    main: request.requesterName,
+    sub: `${REQUEST_TYPE_LABELS[request.requestType]} · ${request.itemSummary || 'No items'}${neededText}`,
+    status: request.status,
+  };
+};
+
+/**
+ * Overdue borrow record → row (Custodian).
+ * @param {{ id: number, borrowerName: string, itemSummary: string | null, dueAt: string }} borrow - Borrow record.
+ * @returns {PanelRow} Row.
+ */
+const toOverdueRow = (borrow) => ({
+  id: borrow.id,
+  main: borrow.borrowerName,
+  sub: `${borrow.itemSummary || 'Equipment'} · due ${formatDate(borrow.dueAt, 'MMM D')}`,
+  status: 'overdue',
+});
+
+/**
+ * The user's own request → row (Staff). Rejected requests show the reason.
+ * @param {{ id: number, requestType: string, status: string, itemSummary: string | null, rejectionReason: string | null, createdAt: string }} request - Request.
+ * @returns {PanelRow} Row.
+ */
+const toMyRequestRow = (request) => ({
+  id: request.id,
+  main: request.itemSummary || 'Request',
+  sub:
+    request.status === 'rejected' && request.rejectionReason
+      ? `Reason: ${request.rejectionReason}`
+      : `${REQUEST_TYPE_LABELS[request.requestType]} request · ${formatDate(request.createdAt, 'MMM D')}`,
+  status: request.status,
+});
+
+/**
+ * The user's own borrowed equipment → row (Staff).
+ * @param {{ id: number, itemSummary: string | null, dueAt: string }} borrow - Borrow record.
+ * @returns {PanelRow} Row.
+ */
+const toMyBorrowRow = (borrow) => ({
+  id: borrow.id,
+  main: borrow.itemSummary || 'Equipment',
+  sub: `Due ${formatDate(borrow.dueAt, 'MMM D')}`,
+  status: getBorrowStatus(borrow.dueAt),
+});
+
+/**
+ * Per-role dashboard layout. Numbers and lists come from GET /dashboard/summary;
+ * each role only receives and sees its own dashboard (role-based access).
  * @type {Object<string, DashboardRoleConfig>}
  */
 export const DASHBOARD_BY_ROLE = {
@@ -32,79 +142,20 @@ export const DASHBOARD_BY_ROLE = {
       {
         key: 'pendingAccounts',
         label: 'Accounts awaiting approval',
-        value: 3,
         note: 'Self-registered personnel',
       },
-      {
-        key: 'pendingRequests',
-        label: 'Pending requests',
-        value: 5,
-        note: 'Waiting for a custodian',
-      },
-      {
-        key: 'lowStockItems',
-        label: 'Low-stock items',
-        value: 3,
-        note: 'At or below reorder level',
-      },
-      {
-        key: 'overdueEquipment',
-        label: 'Overdue equipment',
-        value: 2,
-        note: 'Past due date, not returned',
-      },
+      { key: 'pendingRequests', label: 'Pending requests', note: 'Waiting for a custodian' },
+      { key: 'lowStockItems', label: 'Low-stock items', note: 'At or below reorder level' },
+      { key: 'overdueEquipment', label: 'Overdue equipment', note: 'Past due date, not returned' },
     ],
     panels: [
       {
         key: 'pendingAccounts',
         title: 'New accounts awaiting approval',
         path: PATHS.USERS,
-        rows: [
-          {
-            id: 5,
-            main: 'Liza M. Bautista',
-            sub: 'Teacher I · registered Nov 12, 2026',
-            status: 'pending',
-          },
-          {
-            id: 6,
-            main: 'Ramon D. Garcia',
-            sub: 'Supply Officer · registered Nov 13, 2026',
-            status: 'pending',
-          },
-          {
-            id: 7,
-            main: 'Grace A. Mendoza',
-            sub: 'Teacher III · registered Nov 14, 2026',
-            status: 'pending',
-          },
-        ],
+        toRow: toPendingAccountRow,
       },
-      {
-        key: 'lowStock',
-        title: 'Low stock',
-        path: PATHS.ITEMS,
-        rows: [
-          {
-            id: 1,
-            main: 'Bond paper, A4',
-            sub: '4 reams left · reorder at 10',
-            status: 'lowStock',
-          },
-          {
-            id: 2,
-            main: 'Whiteboard marker, black',
-            sub: '6 pcs left · reorder at 20',
-            status: 'lowStock',
-          },
-          {
-            id: 3,
-            main: 'Printer ink, Epson 003 black',
-            sub: '1 bottle left · reorder at 3',
-            status: 'lowStock',
-          },
-        ],
-      },
+      { key: 'lowStock', title: 'Low stock', path: PATHS.ITEMS, toRow: toLowStockRow },
     ],
   },
   [ROLES.CUSTODIAN]: {
@@ -117,75 +168,23 @@ export const DASHBOARD_BY_ROLE = {
       { label: 'Record a return', path: PATHS.BORROWING },
     ],
     stats: [
-      {
-        key: 'requestsToReview',
-        label: 'Requests to review',
-        value: 5,
-        note: 'Supply and borrow requests',
-      },
-      {
-        key: 'readyToRelease',
-        label: 'Ready to release',
-        value: 2,
-        note: 'Approved, not yet released',
-      },
-      {
-        key: 'lowStockItems',
-        label: 'Low-stock items',
-        value: 3,
-        note: 'At or below reorder level',
-      },
-      {
-        key: 'overdueEquipment',
-        label: 'Overdue equipment',
-        value: 2,
-        note: 'Past due date, not returned',
-      },
+      { key: 'requestsToReview', label: 'Requests to review', note: 'Supply and borrow requests' },
+      { key: 'readyToRelease', label: 'Ready to release', note: 'Approved, not yet released' },
+      { key: 'lowStockItems', label: 'Low-stock items', note: 'At or below reorder level' },
+      { key: 'overdueEquipment', label: 'Overdue equipment', note: 'Past due date, not returned' },
     ],
     panels: [
       {
         key: 'requestsToReview',
         title: 'Requests awaiting your review',
         path: PATHS.REQUESTS,
-        rows: [
-          {
-            id: 11,
-            main: 'Ana P. Reyes',
-            sub: 'Supply · Bond paper, A4 · 5 reams',
-            status: 'pending',
-          },
-          {
-            id: 12,
-            main: 'Carlo B. Ramos',
-            sub: 'Borrow · Projector · due Nov 18',
-            status: 'pending',
-          },
-          {
-            id: 13,
-            main: 'Ana P. Reyes',
-            sub: 'Supply · Chalk, white · ready to release',
-            status: 'approved',
-          },
-        ],
+        toRow: toReviewRequestRow,
       },
       {
         key: 'overdueEquipment',
         title: 'Overdue equipment',
         path: PATHS.BORROWING,
-        rows: [
-          {
-            id: 21,
-            main: 'Carlo B. Ramos',
-            sub: 'Laptop · PROP-2024-0012 · due Nov 10',
-            status: 'overdue',
-          },
-          {
-            id: 22,
-            main: 'Ella F. Cruz',
-            sub: 'Projector · PROP-2023-0004 · due Nov 12',
-            status: 'overdue',
-          },
-        ],
+        toRow: toOverdueRow,
       },
     ],
   },
@@ -198,61 +197,23 @@ export const DASHBOARD_BY_ROLE = {
       { label: 'Borrow equipment', path: PATHS.AVAILABLE_ITEMS },
     ],
     stats: [
-      {
-        key: 'myPendingRequests',
-        label: 'My pending requests',
-        value: 1,
-        note: 'Waiting for the custodian',
-      },
-      {
-        key: 'myApprovedRequests',
-        label: 'Approved, to pick up',
-        value: 1,
-        note: 'Ready for release',
-      },
-      {
-        key: 'myBorrowedItems',
-        label: 'Items I have borrowed',
-        value: 2,
-        note: 'Not yet returned',
-      },
-      { key: 'myDueSoon', label: 'Due soon', value: 1, note: 'Return within 2 days' },
+      { key: 'myPendingRequests', label: 'My pending requests', note: 'Waiting for the custodian' },
+      { key: 'myApprovedRequests', label: 'Approved, to pick up', note: 'Ready for release' },
+      { key: 'myBorrowedItems', label: 'Items I have borrowed', note: 'Not yet returned' },
+      { key: 'myDueSoon', label: 'Due soon', note: `Return within ${DUE_SOON_DAYS} days` },
     ],
     panels: [
       {
         key: 'myRequests',
         title: 'My recent requests',
         path: PATHS.MY_REQUESTS,
-        rows: [
-          {
-            id: 31,
-            main: 'Bond paper, A4 · 5 reams',
-            sub: 'Supply request · Nov 14',
-            status: 'pending',
-          },
-          { id: 32, main: 'Projector', sub: 'Borrow request · needed Nov 17', status: 'approved' },
-          {
-            id: 33,
-            main: 'Whiteboard marker · 10 pcs',
-            sub: 'Supply request · Nov 10',
-            status: 'released',
-          },
-          {
-            id: 34,
-            main: 'Laminating film',
-            sub: 'Reason: out of stock until December',
-            status: 'rejected',
-          },
-        ],
+        toRow: toMyRequestRow,
       },
       {
         key: 'myBorrowed',
         title: 'Borrowed by me',
         path: PATHS.MY_BORROWED,
-        rows: [
-          { id: 41, main: 'Laptop · PROP-2024-0020', sub: 'Due Nov 16', status: 'dueSoon' },
-          { id: 42, main: 'Extension cord · PROP-2022-0101', sub: 'Due Nov 12', status: 'overdue' },
-        ],
+        toRow: toMyBorrowRow,
       },
     ],
   },

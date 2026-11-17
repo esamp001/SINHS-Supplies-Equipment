@@ -54,8 +54,9 @@
 
 /**
  * @typedef {Object} DashboardSummary
- * @property {Object<string, number>} stats - Stat values keyed by stat key.
- * @property {Object<string, PanelRow[]>} panels - Panel rows keyed by panel key.
+ * @property {Object<string, number>} stats - Stat values keyed by stat key (GET /dashboard/summary).
+ * @property {Object<string, Array<Object>>} panels - Raw records keyed by panel key; each panel's
+ *   `toRow` in dashboardConfig.js turns a record into a PanelRow.
  */
 
 export {};

@@ -1,4 +1,4 @@
-import { Card, Empty, Typography } from 'antd';
+import { Card, Empty, Skeleton, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
 import { StatusTag } from './StatusTag.jsx';
@@ -24,23 +24,26 @@ const STYLES = {
  * @param {string} props.title - Panel title.
  * @param {string} props.viewAllPath - Route for the "View all" link.
  * @param {import('../../utils/types.js').PanelRow[]} props.rows - Rows to show.
+ * @param {boolean} [props.loading=false] - Shows a skeleton while rows load.
  * @returns {JSX.Element}
  */
-export const ListPanel = ({ title, viewAllPath, rows }) => (
+export const ListPanel = ({ title, viewAllPath, rows, loading = false }) => (
   <Card title={title} extra={<Link to={viewAllPath}>View all</Link>} styles={{ body: STYLES.body }}>
-    {rows.length === 0 && (
+    {loading && <Skeleton active style={STYLES.empty} />}
+    {!loading && rows.length === 0 && (
       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nothing here" style={STYLES.empty} />
     )}
-    {rows.map((row) => (
-      <div key={row.id} style={STYLES.row}>
-        <div style={STYLES.text}>
-          <Typography.Text strong>{row.main}</Typography.Text>
-          <Typography.Text type="secondary" style={STYLES.sub}>
-            {row.sub}
-          </Typography.Text>
+    {!loading &&
+      rows.map((row) => (
+        <div key={row.id} style={STYLES.row}>
+          <div style={STYLES.text}>
+            <Typography.Text strong>{row.main}</Typography.Text>
+            <Typography.Text type="secondary" style={STYLES.sub}>
+              {row.sub}
+            </Typography.Text>
+          </div>
+          <StatusTag status={row.status} />
         </div>
-        <StatusTag status={row.status} />
-      </div>
-    ))}
+      ))}
   </Card>
 );

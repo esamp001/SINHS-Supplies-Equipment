@@ -1,18 +1,13 @@
+import { useEffect, useState } from 'react';
 import { Badge, Button, Flex, Grid, Layout, Tooltip } from 'antd';
 import { BellOutlined, MenuOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
+import { getUnreadCount } from '../../api/notifications.api.js';
 import { BrandMark } from '../common/BrandMark.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
 import { PATHS } from '../../routes/navConfig.js';
-import { ROLE_LABELS, ROLES } from '../../utils/constants.js';
-
-/** Static unread notification counts per role (prototype). */
-const UNREAD_BY_ROLE = {
-  [ROLES.ADMIN]: 3,
-  [ROLES.CUSTODIAN]: 5,
-  [ROLES.STAFF]: 2,
-};
+import { NOTIFICATION_POLL_MS, ROLE_LABELS } from '../../utils/constants.js';
 
 const STYLES = {
   header: {
@@ -40,10 +35,36 @@ const STYLES = {
  */
 export const AppHeader = ({ onToggleNav }) => {
   const { user, signOut } = useAuth();
-  const unreadCount = UNREAD_BY_ROLE[user.roleCode] || 0;
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
   const isWide = Boolean(screens.md);
+
+  useEffect(() => {
+    let ignore = false;
+
+    /**
+     * Loads the unread notification count (errors keep the last known count).
+     * @returns {void}
+     */
+    const loadUnreadCount = () => {
+      getUnreadCount()
+        .then((data) => {
+          if (!ignore) {
+            setUnreadCount(data.count);
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadUnreadCount();
+    const timerId = setInterval(loadUnreadCount, NOTIFICATION_POLL_MS);
+
+    return () => {
+      ignore = true;
+      clearInterval(timerId);
+    };
+  }, []);
 
   /**
    * Signs out and returns to the login page.

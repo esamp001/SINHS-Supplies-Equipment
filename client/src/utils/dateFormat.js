@@ -22,3 +22,13 @@ export const formatDate = (value, pattern = 'MMM D, YYYY') =>
  * @returns {string} Formatted date/time, or an em dash when empty.
  */
 export const formatDateTime = (value) => formatDate(value, 'MMM D, YYYY h:mm A');
+
+/**
+ * Formats a date-only value ('YYYY-MM-DD', e.g. a request's needed date) without timezone
+ * conversion, so it never shifts by a day.
+ * @param {string | null | undefined} value - Date string.
+ * @param {string} [pattern='MMM D, YYYY'] - dayjs format pattern.
+ * @returns {string} Formatted date, or an em dash when empty.
+ */
+export const formatDateOnly = (value, pattern = 'MMM D, YYYY') =>
+  value ? dayjs(value).format(pattern) : '—';

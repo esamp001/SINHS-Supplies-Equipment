@@ -22,3 +22,18 @@ export const createForUsers = async (userIds, notification, trx = db) => {
     })),
   );
 };
+
+/**
+ * Counts a user's unread in-app notifications.
+ * @param {number} userId - User ID.
+ * @param {import('knex').Knex} [trx=db] - Knex instance or transaction.
+ * @returns {Promise<number>} Unread count.
+ */
+export const countUnread = async (userId, trx = db) => {
+  const row = await trx('notifications')
+    .where({ user_id: userId, is_read: false })
+    .count('id as count')
+    .first();
+
+  return Number(row?.count || 0);
+};
