@@ -154,7 +154,7 @@ const findById = (id, trx = knex) =>
 
 ### 4.4 Frontend API layer (`client/src/api`)
 
-> **Current phase:** sign-in, registration, change password, the Users page, the role-based dashboards (`GET /dashboard/summary`) and the notification bell use the real API. The inventory tables exist (migration `…0003_create_inventory_tables`) but start empty; the Items, Requests and Borrowing pages are still placeholders. No static or sample data in the client.
+> **Current phase:** every module uses the real API: auth, Users, dashboards, notifications (bell list + daily borrow reminders), Master data, Item types & fields, Items (with unit tracking), Stock transactions, Requests (approve/reject/release), Borrowing & returns, Reports (Excel/PDF) and the Audit log, plus the staff pages (Available items, My requests, My borrowed items). Development sample data comes only from the server seeds (`03_master_data.js`); there is no static or sample data in the client.
 
 - All network calls go through `httpClient.js`, built on native `fetch`.
 - Components and pages never call `fetch` directly; they call `api/*.api.js` functions. **Pages load data themselves** — in a `useEffect` with an `ignore` flag for cleanup — and call API functions in event handlers for actions. Don't create custom data hooks (`useUsers`, `useApiQuery`, …); `useAuth` is the only shared hook.

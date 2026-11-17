@@ -25,7 +25,7 @@ Node.js + Express 5 + Knex + PostgreSQL REST API. Follows `../AGENTS.md`
 
    ```bash
    npm install
-   npm run db:setup            # migrations + roles, positions, demo accounts
+   npm run db:setup            # migrations + roles, positions, demo accounts, sample inventory
    ```
 
    On Windows you can instead double-click **`db\migrateAndSeed.bat`** (or run
@@ -58,7 +58,7 @@ Users page.
 | `db\migrateAndSeed.bat` | Windows: migrate to latest + seed (double-click) |
 | `npm run lint` / `format` | ESLint / Prettier |
 
-## Endpoints (so far)
+## Endpoints
 
 | Method & path | Access | Purpose |
 |---------------|--------|---------|
@@ -76,9 +76,37 @@ Users page.
 | `POST /api/v1/users/:id/reset-password` | admin | Returns `{ temporaryPassword }` |
 | `PUT /api/v1/users/:id/status` | admin | `{ status: 'active' \| 'deactivated' }` |
 | `GET /api/v1/dashboard/summary` | signed in | Role-based dashboard numbers and lists (each role gets only its own) |
+| `GET /api/v1/notifications` | signed in | Recent notifications for the header bell |
 | `GET /api/v1/notifications/unread-count` | signed in | Unread in-app notifications for the header bell |
+| `POST /api/v1/notifications/:id/read`, `/read-all` | signed in | Mark one / all as read |
+| `GET /api/v1/master-data/:resource` | signed in | `categories`, `units`, `locations`, `positions` (all, with `isActive`) |
+| `POST/PUT/DELETE /api/v1/master-data/:resource[/:id]` | admin | Create, edit/activate, delete unused records |
+| `GET /api/v1/item-types` | signed in | Item types with custom fields (`?activeOnly=true`) |
+| `POST/PUT/DELETE /api/v1/item-types[/:id]` | admin, custodian | Manage types (kind/tracking locked once used) |
+| `POST/PUT/DELETE /api/v1/item-types/:id/fields[/:fieldId]` | admin, custodian | Manage custom fields |
+| `GET /api/v1/items` | signed in | Paginated list (`search`, `itemTypeId`, `categoryId`, `kind`, `lowStockOnly`, `availableOnly`, `sortBy`) |
+| `GET /api/v1/items/:id` | signed in | Item with fields and units |
+| `POST/PUT/DELETE /api/v1/items[/:id]` | admin, custodian | Manage items (opening stock goes to the ledger) |
+| `POST/PUT /api/v1/items/:id/units[/:unitId]` | admin, custodian | Register / edit units |
+| `POST /api/v1/items/:id/units/:unitId/status` | admin, custodian | Available, under repair, lost, disposed `{ status, remarks }` |
+| `GET /api/v1/stock-transactions` | admin, custodian | Ledger (`itemId`, `type`, `dateFrom`, `dateTo`, `search`) |
+| `POST /api/v1/stock-transactions/stock-in` | admin, custodian | `{ itemId, quantity, remarks }` |
+| `POST /api/v1/stock-transactions/adjustments` | admin, custodian | `{ itemId, quantity (signed), remarks }` |
+| `GET /api/v1/stock-transactions/reconciliation` | admin, custodian | Items whose stock does not match the ledger |
+| `GET /api/v1/requests[/:id]` | signed in | Staff see their own; reviewers see all (`mine=true` for theirs) |
+| `POST /api/v1/requests` | signed in | Submit `{ requestType, purpose, neededAt, dueDate?, items }` |
+| `POST /api/v1/requests/:id/cancel` | requester | Cancel own pending request |
+| `POST /api/v1/requests/:id/approve` | admin, custodian | `{ items: [{ requestItemId, approvedQuantity, remarks }], dueDate? }` |
+| `POST /api/v1/requests/:id/reject` | admin, custodian | `{ reason }` |
+| `POST /api/v1/requests/:id/release` | admin, custodian | `{ units: { [requestItemId]: [unitId] } }` for unit-tracked equipment |
+| `GET /api/v1/borrow-records[/:id]` | signed in | Staff see their own (`status=borrowed\|overdue\|returned`) |
+| `POST /api/v1/borrow-records/:id/return` | admin, custodian | `{ items: [{ borrowRecordItemId, condition, remarks }] }` |
+| `GET /api/v1/reports/:report?format=json\|xlsx\|pdf` | admin, custodian | `stock-levels`, `transactions`, `borrowed-equipment`, `requests` |
+| `GET /api/v1/audit-logs` | admin | Read-only log (`userId`, `entityType`, `action`, `dateFrom`, `dateTo`) |
 
-Every write records an `audit_logs` row; registrations and approvals create in-app `notifications`.
+Every write records an `audit_logs` row; registrations, requests and borrowing create in-app
+`notifications`. A daily job (7:00 AM Manila, also run at startup) sends due-tomorrow and overdue
+reminders once per borrow record.
 
 ## Database tables
 
@@ -88,5 +116,8 @@ Every write records an `audit_logs` row; registrations and approvals create in-a
 | `…0002_create_audit_logs_notifications` | `audit_logs`, `notifications` |
 | `…0003_create_inventory_tables` | `categories`, `units`, `locations`, `item_types`, `item_type_fields`, `items`, `item_units`, `inventory_requests`, `inventory_request_items`, `borrow_records`, `borrow_record_items`, `stock_transactions` |
 
-Inventory tables start empty (no sample data). The dashboards fill in as items, requests and borrow
-records are created. After pulling new migrations, run `npm run migrate`.
+| `…0004_extend_master_data_and_notifications` | `is_active` / `created_by` / `updated_by` on master data, `borrow_record_items.remarks`, `notifications.dedupe_key` |
+
+Seed `03_master_data.js` adds categories, units, locations, item types with custom fields and (only
+when there are no items yet) sample items with opening stock written to the ledger. After pulling new
+migrations, run `npm run migrate` (and `npm run seed` for the sample data).

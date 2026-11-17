@@ -24,7 +24,18 @@ Demo accounts (password from the server's `SEED_DEFAULT_PASSWORD`, default `pass
 | Change password | `/change-password` | signed in | API (forced after an admin reset) |
 | Users & roles | `/users` | admin | API (approve/reject, role, reset password, status) |
 | Dashboard (per role) | `/dashboard` | all | API (`GET /dashboard/summary`; layout in `dashboardConfig.js`) |
-| Other modules | see `navConfig.js` | per role | "coming soon" placeholder |
+| Items | `/items` | admin, custodian | API (items, units, stock-in, adjustments) |
+| Stock transactions | `/stock-transactions` | admin, custodian | API (ledger, stock-in, adjustments, reconcile check) |
+| Requests | `/requests` | admin, custodian | API (approve/partial, reject, release) |
+| Borrowing & returns | `/borrowing` | admin, custodian | API (borrow records, returns) |
+| Item types & fields | `/item-types` | admin, custodian | API (types and custom fields) |
+| Reports | `/reports` | admin, custodian | API (preview + Excel/PDF download) |
+| Master data | `/master-data` | admin | API (categories, units, locations, positions) |
+| Audit log | `/audit-log` | admin | API (read-only, filters) |
+| Available items | `/available-items` | staff | API (pick items, submit a request) |
+| My requests | `/my-requests` | staff | API (own requests, cancel pending) |
+| My borrowed items | `/my-borrowed` | staff | API (own borrow records) |
+| Notification bell | header | all | API (unread count every 60s, recent list, mark read) |
 
 - API calls go through `src/api/httpClient.js` (native `fetch`, `credentials: 'include'`).
 - Pages call `src/api/*.api.js` functions directly — in `useEffect` to load data and in event
