@@ -154,7 +154,7 @@ const findById = (id, trx = knex) =>
 
 ### 4.4 Frontend API layer (`client/src/api`)
 
-> **Current phase:** every module uses the real API: auth, Users, dashboards, notifications (bell list + daily borrow reminders), Master data, Item types & fields, Items (with unit tracking), Stock transactions, Requests (approve/reject/release), Borrowing & returns, Reports (Excel/PDF) and the Audit log, plus the staff pages (Available items, My requests, My borrowed items). Master data, item types and items are created in the app (seeds only add roles, positions and demo accounts); there is no static or sample data in the client.
+> **Current phase:** every module uses the real API: auth, Users, dashboards, notifications (bell list + daily borrow reminders), Master data, Item types & fields, Items (with unit tracking), Stock transactions, Requests (approve/reject/release), Borrowing & returns, Reports (Excel/PDF) and the Audit log, plus the staff pages (Available items, My requests, My borrowed items). Seeds add roles, positions, demo accounts and sample categories, units and locations; item types and items are created in the app; there is no static or sample data in the client.
 
 - All network calls go through `httpClient.js`, built on native `fetch`.
 - Components and pages never call `fetch` directly; they call `api/*.api.js` functions. **Pages load data themselves** — in a `useEffect` with an `ignore` flag for cleanup, using an `async` loader function with `try/catch/finally` (never `.then()`; see §12.6) — and call API functions in event handlers for actions. Don't create custom data hooks (`useUsers`, `useApiQuery`, …); `useAuth` is the only shared hook.
