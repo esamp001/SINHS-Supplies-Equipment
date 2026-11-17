@@ -5,10 +5,12 @@ import { ChangePasswordPage } from '../pages/auth/ChangePasswordPage.jsx';
 import { LoginPage } from '../pages/auth/LoginPage.jsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.jsx';
 import { DashboardPage } from '../pages/dashboard/DashboardPage.jsx';
+import { ItemsPage } from '../pages/items/ItemsPage.jsx';
 import { ItemTypesPage } from '../pages/itemTypes/ItemTypesPage.jsx';
 import { MasterDataPage } from '../pages/masterData/MasterDataPage.jsx';
 import { ComingSoonPage } from '../pages/misc/ComingSoonPage.jsx';
 import { NotFoundPage } from '../pages/misc/NotFoundPage.jsx';
+import { StockTransactionsPage } from '../pages/stockTransactions/StockTransactionsPage.jsx';
 import { UsersPage } from '../pages/users/UsersPage.jsx';
 import { ROLES } from '../utils/constants.js';
 import { GuestRoute } from './GuestRoute.jsx';
@@ -39,6 +41,8 @@ export const AppRoutes = () => (
         </Route>
 
         <Route element={<ProtectedRoute roles={[ROLES.ADMIN, ROLES.CUSTODIAN]} />}>
+          <Route path={PATHS.ITEMS} element={<ItemsPage />} />
+          <Route path={PATHS.STOCK_TRANSACTIONS} element={<StockTransactionsPage />} />
           <Route path={PATHS.ITEM_TYPES} element={<ItemTypesPage />} />
         </Route>
 
