@@ -63,13 +63,21 @@ const buildUrl = (path, params) => {
 
 /**
  * Sends an API request and returns the `data` from the response envelope.
+ * With `withMeta`, returns `{ data, meta }` instead (paginated lists).
  * @param {string} path - Path relative to /api/v1, e.g. "/auth/me".
- * @param {{ method?: string, body?: Object, params?: Object, skipUnauthorizedHandler?: boolean }} [options] - Request options.
- * @returns {Promise<*>} Response data.
+ * @param {{ method?: string, body?: Object, params?: Object, skipUnauthorizedHandler?: boolean, withMeta?: boolean }} [options] - Request options.
+ * @returns {Promise<*>} Response data, or `{ data, meta }` with `withMeta`.
  * @throws {ApiError} When the request fails or the server returns `success: false`.
  */
 export const request = async (path, options = {}) => {
-  const { method = 'GET', body, params, skipUnauthorizedHandler = false } = options;
+  const {
+    method = 'GET',
+    body,
+    params,
+    skipUnauthorizedHandler = false,
+    withMeta = false,
+  } = options;
+
   let response;
 
   try {
@@ -97,5 +105,57 @@ export const request = async (path, options = {}) => {
     );
   }
 
-  return json.data;
+  return withMeta ? { data: json.data, meta: json.meta } : json.data;
+};
+
+/**
+ * Reads the file name from a Content-Disposition header.
+ * @param {string | null} header - Header value.
+ * @param {string} fallback - Name used when the header has none.
+ * @returns {string} File name.
+ */
+const getFileName = (header, fallback) => {
+  const match = /filename="?([^";]+)"?/i.exec(header || '');
+
+  return match ? match[1] : fallback;
+};
+
+/**
+ * Downloads a file (e.g. an Excel or PDF report) with the auth cookie and saves it through a
+ * temporary object URL (AGENTS.md §5 report exports).
+ * @param {string} path - Path relative to /api/v1.
+ * @param {Object} [params] - Query parameters.
+ * @param {string} [fallbackName='download'] - File name if the server doesn't send one.
+ * @returns {Promise<void>}
+ * @throws {ApiError} When the server returns an error.
+ */
+export const download = async (path, params, fallbackName = 'download') => {
+  let response;
+
+  try {
+    response = await fetch(buildUrl(path, params), { credentials: 'include' });
+  } catch {
+    throw createApiError('Cannot reach the server. Is the API running?', 0);
+  }
+
+  if (response.status === 401) {
+    unauthorizedHandler();
+  }
+
+  if (!response.ok) {
+    const json = await response.json().catch(() => ({}));
+
+    throw createApiError(json.message || 'Download failed.', response.status, json.errors);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = objectUrl;
+  link.download = getFileName(response.headers.get('Content-Disposition'), fallbackName);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
 };
