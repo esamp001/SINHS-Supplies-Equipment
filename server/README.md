@@ -28,6 +28,10 @@ Node.js + Express 5 + Knex + PostgreSQL REST API. Follows `../AGENTS.md`
    npm run db:setup            # migrations + roles, positions, demo accounts
    ```
 
+   On Windows you can instead double-click **`db\migrateAndSeed.bat`** (or run
+   `server\db\migrateAndSeed.bat`). It checks for `.env`, installs packages if needed, runs
+   `knex migrate:latest`, then `knex seed:run`, and stops with a clear message if a step fails.
+
 4. **Start the API:**
 
    ```bash
@@ -51,6 +55,7 @@ Users page.
 | `npm run migrate` / `migrate:rollback` | Apply / undo the latest migrations |
 | `npm run seed` | Run seeds (safe to re-run) |
 | `npm run db:setup` | Migrate + seed |
+| `db\migrateAndSeed.bat` | Windows: migrate to latest + seed (double-click) |
 | `npm run lint` / `format` | ESLint / Prettier |
 
 ## Endpoints (so far)
