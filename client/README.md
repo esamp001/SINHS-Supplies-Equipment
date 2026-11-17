@@ -53,5 +53,5 @@ Ant Design theme tokens (`src/theme/antdTheme.js`) + inline `style={}` only. No 
 
 ## Notes
 
-- `src/assets/images/sinhsSeal.svg` is a placeholder — replace it with the official school seal.
+- `src/assets/images/sinhsSeal.png` is the official school seal (transparent background), shown by `BrandMark` on the sign-in, registration and header.
 - Scripts: `npm run lint`, `npm run format`, `npm run build`.

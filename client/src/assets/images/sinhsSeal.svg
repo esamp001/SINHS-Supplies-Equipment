@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<!-- Placeholder seal. Replace with the official SINHS seal (sinhsSeal.png) and update BrandMark.jsx. -->
-<circle cx="50" cy="50" r="48" fill="#FFFFFF" stroke="#123A7A" stroke-width="4"/>
-<circle cx="50" cy="50" r="38" fill="none" stroke="#E8B71A" stroke-width="3"/>
-<text x="50" y="57" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#123A7A">SINHS</text>
-</svg>
