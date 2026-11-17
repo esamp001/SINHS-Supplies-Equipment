@@ -24,6 +24,12 @@ export const formatDate = (value, pattern = 'MMM D, YYYY') =>
 export const formatDateTime = (value) => formatDate(value, 'MMM D, YYYY h:mm A');
 
 /**
+ * Returns today's date in Asia/Manila as 'YYYY-MM-DD'.
+ * @returns {string} Manila calendar date.
+ */
+export const getManilaToday = () => dayjs().tz(APP_TIMEZONE).format('YYYY-MM-DD');
+
+/**
  * Formats a date-only value ('YYYY-MM-DD', e.g. a request's needed date) without timezone
  * conversion, so it never shifts by a day.
  * @param {string | null | undefined} value - Date string.
