@@ -1,44 +1,44 @@
-# SINHS Supplies & Equipment — Client (static prototype)
+# SINHS Supplies & Equipment — Client
 
 React + Vite + Ant Design front end. Follows the conventions in `../AGENTS.md`.
 
 ## Run
 
+Start the API first (see `../server/README.md`), then:
+
 ```bash
 cd client
 npm install
-npm run dev            # http://localhost:5173
+npm run dev            # http://localhost:5173 (proxies /api to http://localhost:4000)
 ```
 
-## Prototype mode (static, no backend)
+Demo accounts (password from the server's `SEED_DEFAULT_PASSWORD`, default `password123`):
+`admin`, `custodian`, `staff`.
 
-- All data is static: shared demo data is in `src/data/staticData.js`; page-specific data (dashboard
-  numbers and lists) is inline in each page's config (`src/pages/dashboard/dashboardConfig.js`).
-- Sign-in checks the demo accounts and keeps the user in memory only — reloading the page signs out.
-- Changes on the Users page (approve, reject, change role, deactivate) live in page state and reset
-  when you leave the page or reload.
-- There is no API layer yet. When the backend starts, add `src/api/` (fetch wrapper with
-  `credentials: 'include'`) and replace the static data per AGENTS.md §4.4.
+## What's connected to the API
 
-Demo accounts (password `password123`): `admin`, `custodian`, `staff`, and `liza.bautista` (pending).
+| Screen | Path | Roles | Data |
+|--------|------|-------|------|
+| Sign in | `/login` | public | API (httpOnly cookie session) |
+| Create account | `/register` | public | API (positions + registration) |
+| Change password | `/change-password` | signed in | API (forced after an admin reset) |
+| Users & roles | `/users` | admin | API (approve/reject, role, reset password, status) |
+| Dashboard (per role) | `/dashboard` | all | static sample data (`dashboardConfig.js`) |
+| Other modules | see `navConfig.js` | per role | "coming soon" placeholder |
+
+- API calls go through `src/api/httpClient.js` (native `fetch`, `credentials: 'include'`).
+- Pages call `src/api/*.api.js` functions directly — in `useEffect` to load data and in event
+  handlers for actions. There are no custom data hooks.
+- The session is restored on page load from `GET /auth/me`, so reloading keeps you signed in.
 
 ## Role-based access
 
-`src/routes/navConfig.js` defines each role's menu (`NAV_GROUPS_BY_ROLE`) and which roles can open each
-page. `ProtectedRoute` sends users without access back to their dashboard.
-
-| Screen | Path | Roles |
-|--------|------|-------|
-| Sign in | `/login` | public |
-| Create account (self-registration) | `/register` | public |
-| Dashboard (per role) | `/dashboard` | all |
-| Users & roles | `/users` | admin |
-| Other modules ("coming soon") | see `navConfig.js` | per role |
+`src/routes/navConfig.js` defines each role's menu and which roles can open each page.
+`ProtectedRoute` sends users without access back to their dashboard; the server enforces every rule.
 
 ## Styling
 
 Ant Design theme tokens (`src/theme/antdTheme.js`) + inline `style={}` only. No CSS files.
-Shared inline styles are in `src/theme/sharedStyles.js`.
 
 ## Notes
 

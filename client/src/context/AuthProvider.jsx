@@ -1,49 +1,84 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { DEMO_PASSWORD, getPositionName, STATIC_USERS } from '../data/staticData.js';
-import { USER_STATUS } from '../utils/constants.js';
+import { getCurrentUser, login, logout } from '../api/auth.api.js';
+import { setUnauthorizedHandler } from '../api/httpClient.js';
 import { AuthContext } from './authContext.js';
 
-/** Sign-in messages for accounts that cannot sign in yet. */
-const STATUS_MESSAGES = {
-  [USER_STATUS.PENDING]: 'Your account is pending approval by an administrator.',
-  [USER_STATUS.REJECTED]: 'Your registration was not approved. Please contact the administrator.',
-  [USER_STATUS.DEACTIVATED]: 'Your account is deactivated. Please contact the administrator.',
-};
-
 /**
- * Provides the signed-in user. Static prototype: checks credentials against the demo accounts
- * and keeps the user in memory only (reloading the page signs out).
+ * Provides the signed-in user. The session lives in the server's httpOnly cookie; this provider
+ * only keeps the user profile in memory and restores it from GET /auth/me on page load.
  * @param {Object} props
  * @param {import('react').ReactNode} props.children - App content.
  * @returns {JSX.Element}
  */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [initializing, setInitializing] = useState(true);
+
+  useEffect(() => {
+    let ignore = false;
+
+    setUnauthorizedHandler(() => setUser(null));
+
+    getCurrentUser()
+      .then((currentUser) => {
+        if (!ignore) {
+          setUser(currentUser);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setInitializing(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   /**
-   * Signs in with a demo account.
-   * @param {{ username: string, password: string }} credentials - Login credentials.
-   * @returns {import('../utils/types.js').AuthUser} Signed-in user.
-   * @throws {Error} When the credentials are wrong or the account cannot sign in.
+   * Signs in and stores the returned profile.
+   * @param {{ username: string, password: string, rememberMe: boolean }} credentials - Login form values.
+   * @returns {Promise<import('../utils/types.js').AuthUser>} Signed-in user.
+   * @throws {import('../api/httpClient.js').ApiError} When the server rejects the sign-in.
    */
-  const signIn = useCallback(({ username, password }) => {
-    const account = STATIC_USERS.find((row) => row.username === username.trim());
-    if (!account || password !== DEMO_PASSWORD) throw new Error('Invalid username or password');
-    if (STATUS_MESSAGES[account.status]) throw new Error(STATUS_MESSAGES[account.status]);
+  const signIn = useCallback(async (credentials) => {
+    const signedInUser = await login(credentials);
 
-    const signedInUser = { ...account, positionName: getPositionName(account.positionId) };
     setUser(signedInUser);
+
     return signedInUser;
   }, []);
 
   /**
-   * Signs out.
+   * Signs out and clears the profile (even if the request fails).
+   * @returns {Promise<void>}
+   */
+  const signOut = useCallback(async () => {
+    try {
+      await logout();
+    } finally {
+      setUser(null);
+    }
+  }, []);
+
+  /**
+   * Replaces the stored profile, e.g. after a password change.
+   * @param {import('../utils/types.js').AuthUser} updatedUser - Updated user from the API.
    * @returns {void}
    */
-  const signOut = useCallback(() => setUser(null), []);
+  const updateUser = useCallback((updatedUser) => setUser(updatedUser), []);
 
-  const value = useMemo(() => ({ user, signIn, signOut }), [user, signIn, signOut]);
+  const value = useMemo(
+    () => ({ user, initializing, signIn, signOut, updateUser }),
+    [user, initializing, signIn, signOut, updateUser],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

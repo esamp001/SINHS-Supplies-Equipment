@@ -7,13 +7,18 @@ import { SideNav } from './SideNav.jsx';
 import { BRAND_COLORS } from '../../utils/constants.js';
 
 const STYLES = {
-  root: { minHeight: '100vh' },
-  sider: { borderRight: `1px solid ${BRAND_COLORS.border}` },
-  content: { display: 'flex', flexDirection: 'column', gap: 28, minWidth: 0 },
+  // Exactly one screen tall: the header and side menu stay in place.
+  root: { height: '100vh', overflow: 'hidden' },
+  body: { flex: 1, minHeight: 0 },
+  sider: { borderRight: `1px solid ${BRAND_COLORS.border}`, overflowY: 'auto' },
+  // Only the page content scrolls (vertically).
+  content: { minWidth: 0, overflowY: 'auto', overflowX: 'hidden' },
+  page: { display: 'flex', flexDirection: 'column', gap: 28 },
 };
 
 /**
- * Authenticated app shell: header, collapsible side navigation, and page content.
+ * Authenticated app shell: fixed header and side navigation, with a vertically scrollable
+ * page content area.
  * @returns {JSX.Element}
  */
 export const AppLayout = () => {
@@ -36,13 +41,15 @@ export const AppLayout = () => {
    * @returns {void}
    */
   const handleNavigate = () => {
-    if (isSmallScreen) setIsNavToggled(false);
+    if (isSmallScreen) {
+      setIsNavToggled(false);
+    }
   };
 
   return (
     <Layout style={STYLES.root}>
       <AppHeader onToggleNav={handleToggleNav} />
-      <Layout>
+      <Layout style={STYLES.body}>
         <Layout.Sider
           style={STYLES.sider}
           width={248}
@@ -52,8 +59,10 @@ export const AppLayout = () => {
         >
           <SideNav onNavigate={handleNavigate} />
         </Layout.Sider>
-        <Layout.Content style={{ ...STYLES.content, padding: isPhone ? '20px 16px' : 32 }}>
-          <Outlet />
+        <Layout.Content style={STYLES.content}>
+          <div style={{ ...STYLES.page, padding: isPhone ? '20px 16px' : 32 }}>
+            <Outlet />
+          </div>
         </Layout.Content>
       </Layout>
     </Layout>

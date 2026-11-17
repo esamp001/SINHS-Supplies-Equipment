@@ -68,9 +68,11 @@ export const AuthSplitLayout = ({ aside, children }) => {
   const rootStyle = isDesktop
     ? { ...STYLES.root, height: '100vh', overflow: 'hidden' }
     : { ...STYLES.root, minHeight: '100vh', flexDirection: 'column' };
+
   const asideStyle = isDesktop
     ? { ...STYLES.aside, flex: '1 1 50%', padding: '28px 40px', overflow: 'hidden' }
     : { ...STYLES.aside, padding: '24px 20px' };
+
   const mainStyle = isDesktop
     ? { ...STYLES.main, flex: '1 1 50%', padding: '20px 32px', overflowY: 'auto' }
     : { ...STYLES.main, padding: '24px 16px' };

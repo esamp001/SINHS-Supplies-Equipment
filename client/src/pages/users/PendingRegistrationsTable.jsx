@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { App, Button, Flex, Input, Modal, Select, Table, Typography } from 'antd';
 
-import { POSITION_OPTIONS } from '../../data/staticData.js';
-import { ROLE_LABELS, ROLE_OPTIONS, ROLES, USER_STATUS } from '../../utils/constants.js';
+import { approveUser, rejectUser } from '../../api/users.api.js';
+import { ROLE_LABELS, ROLE_OPTIONS, ROLES } from '../../utils/constants.js';
 import { formatDate } from '../../utils/dateFormat.js';
 
 /**
  * Pending self-registrations: confirm position, choose role, then approve or reject with a reason.
  * @param {Object} props
  * @param {import('../../utils/types.js').User[]} props.users - Pending users.
- * @param {(userId: number, changes: Object) => void} props.onUpdateUser - Saves changes to a user.
+ * @param {boolean} props.loading - Shows the table loading state.
+ * @param {Array<{ value: number, label: string }>} props.positionOptions - Position dropdown options.
+ * @param {() => void} props.onChanged - Called after an approval or rejection so the page reloads.
  * @returns {JSX.Element}
  */
-export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
+export const PendingRegistrationsTable = ({ users, loading, positionOptions, onChanged }) => {
   const { message } = App.useApp();
   const [selections, setSelections] = useState({});
+  const [busyUserId, setBusyUserId] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectError, setRejectError] = useState('');
@@ -42,12 +45,22 @@ export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
   /**
    * Approves a pending account with the selected role and position.
    * @param {import('../../utils/types.js').User} user - Pending user.
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  const handleApprove = (user) => {
+  const handleApprove = async (user) => {
     const selection = getSelection(user);
-    onUpdateUser(user.id, { ...selection, status: USER_STATUS.ACTIVE });
-    message.success(`${user.fullName} approved as ${ROLE_LABELS[selection.roleCode]}.`);
+
+    setBusyUserId(user.id);
+
+    try {
+      await approveUser(user.id, selection);
+      message.success(`${user.fullName} approved as ${ROLE_LABELS[selection.roleCode]}.`);
+      onChanged();
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setBusyUserId(null);
+    }
   };
 
   /**
@@ -69,19 +82,27 @@ export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
 
   /**
    * Rejects the selected account. A reason is required.
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  const handleConfirmReject = () => {
+  const handleConfirmReject = async () => {
     if (!rejectReason.trim()) {
       setRejectError('A reason is required.');
+
       return;
     }
-    onUpdateUser(rejectTarget.id, {
-      status: USER_STATUS.REJECTED,
-      rejectionReason: rejectReason.trim(),
-    });
-    message.success(`${rejectTarget.fullName}'s registration was rejected.`);
-    closeReject();
+
+    setBusyUserId(rejectTarget.id);
+
+    try {
+      await rejectUser(rejectTarget.id, rejectReason.trim());
+      message.success(`${rejectTarget.fullName}'s registration was rejected.`);
+      closeReject();
+      onChanged();
+    } catch (error) {
+      setRejectError(error.message);
+    } finally {
+      setBusyUserId(null);
+    }
   };
 
   /**
@@ -115,7 +136,7 @@ export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
         <Select
           aria-label="Position"
           style={{ width: '100%' }}
-          options={POSITION_OPTIONS}
+          options={positionOptions}
           value={getSelection(user).positionId}
           onChange={(positionId) => updateSelection(user.id, { positionId })}
         />
@@ -148,10 +169,14 @@ export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
       width: 200,
       render: (_value, user) => (
         <Flex gap={8}>
-          <Button type="primary" onClick={() => handleApprove(user)}>
+          <Button
+            type="primary"
+            loading={busyUserId === user.id}
+            onClick={() => handleApprove(user)}
+          >
             Approve
           </Button>
-          <Button danger onClick={() => openReject(user)}>
+          <Button danger disabled={busyUserId === user.id} onClick={() => openReject(user)}>
             Reject
           </Button>
         </Flex>
@@ -169,6 +194,7 @@ export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
         rowKey="id"
         columns={columns}
         dataSource={users}
+        loading={loading}
         pagination={false}
         scroll={{ x: 960 }}
         locale={{ emptyText: 'No pending registrations' }}
@@ -177,7 +203,10 @@ export const PendingRegistrationsTable = ({ users, onUpdateUser }) => {
         title={rejectTarget ? `Reject ${rejectTarget.fullName}?` : 'Reject registration'}
         open={Boolean(rejectTarget)}
         okText="Reject"
-        okButtonProps={{ danger: true }}
+        okButtonProps={{
+          danger: true,
+          loading: Boolean(rejectTarget) && busyUserId === rejectTarget.id,
+        }}
         onOk={handleConfirmReject}
         onCancel={closeReject}
         destroyOnHidden

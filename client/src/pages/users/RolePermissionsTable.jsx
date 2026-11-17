@@ -43,6 +43,7 @@ const renderAccess = (access, roleLabel) => {
       </Typography.Text>
     );
   }
+
   return (
     <span
       aria-label={`${roleLabel}: ${access === ACCESS.FALLBACK ? 'allowed as fallback' : 'allowed'}`}

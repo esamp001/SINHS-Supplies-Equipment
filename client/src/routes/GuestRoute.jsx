@@ -5,10 +5,19 @@ import { PATHS } from './navConfig.js';
 
 /**
  * Wraps public pages (login, register): signed-in users are sent to the dashboard.
- * @returns {JSX.Element}
+ * Renders nothing while the session is being restored.
+ * @returns {JSX.Element | null}
  */
 export const GuestRoute = () => {
-  const { user } = useAuth();
-  if (user) return <Navigate to={PATHS.DASHBOARD} replace />;
+  const { user, initializing } = useAuth();
+
+  if (initializing) {
+    return null;
+  }
+
+  if (user) {
+    return <Navigate to={PATHS.DASHBOARD} replace />;
+  }
+
   return <Outlet />;
 };

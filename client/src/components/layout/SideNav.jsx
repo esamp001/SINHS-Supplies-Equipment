@@ -34,7 +34,10 @@ export const SideNav = ({ onNavigate }) => {
    */
   const handleClick = ({ key }) => {
     navigate(key);
-    if (onNavigate) onNavigate();
+
+    if (onNavigate) {
+      onNavigate();
+    }
   };
 
   return (

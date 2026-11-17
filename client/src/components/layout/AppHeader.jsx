@@ -47,10 +47,10 @@ export const AppHeader = ({ onToggleNav }) => {
 
   /**
    * Signs out and returns to the login page.
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut();
     navigate(PATHS.LOGIN, { replace: true });
   };
 

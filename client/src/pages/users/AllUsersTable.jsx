@@ -1,34 +1,31 @@
 import { useState } from 'react';
 import { Alert, App, Button, Flex, Input, Modal, Select, Table, Tag, Typography } from 'antd';
 
+import { changeUserRole, changeUserStatus, resetUserPassword } from '../../api/users.api.js';
 import { StatusTag } from '../../components/common/StatusTag.jsx';
-import { getPositionName } from '../../data/staticData.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { ROLE_LABELS, ROLE_OPTIONS, USER_STATUS } from '../../utils/constants.js';
 import { formatDate } from '../../utils/dateFormat.js';
 
 /**
- * Creates a readable temporary password (prototype only; the server generates it later).
- * @returns {string} Temporary password.
- */
-const generateTemporaryPassword = () => `Temp-${Math.random().toString(36).slice(2, 8)}`;
-
-/**
  * All approved users: change role, reset password (temporary password), deactivate/reactivate.
  * @param {Object} props
  * @param {import('../../utils/types.js').User[]} props.users - Active and deactivated users.
- * @param {(userId: number, changes: Object) => void} props.onUpdateUser - Saves changes to a user.
+ * @param {boolean} props.loading - Shows the table loading state.
+ * @param {() => void} props.onChanged - Called after a change so the page reloads.
  * @returns {JSX.Element}
  */
-export const AllUsersTable = ({ users, onUpdateUser }) => {
+export const AllUsersTable = ({ users, loading, onChanged }) => {
   const { message, modal } = App.useApp();
   const { user: currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [roleTarget, setRoleTarget] = useState(null);
   const [newRoleCode, setNewRoleCode] = useState(null);
+  const [savingRole, setSavingRole] = useState(false);
   const [temporaryPassword, setTemporaryPassword] = useState(null);
 
   const searchTerm = search.trim().toLowerCase();
+
   const visibleUsers = users.filter(
     (user) =>
       !searchTerm ||
@@ -53,17 +50,26 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
   const closeChangeRole = () => setRoleTarget(null);
 
   /**
-   * Saves the new role.
-   * @returns {void}
+   * Saves the new role through the API.
+   * @returns {Promise<void>}
    */
-  const handleSaveRole = () => {
-    onUpdateUser(roleTarget.id, { roleCode: newRoleCode });
-    message.success(`${roleTarget.fullName} is now ${ROLE_LABELS[newRoleCode]}.`);
-    closeChangeRole();
+  const handleSaveRole = async () => {
+    setSavingRole(true);
+
+    try {
+      await changeUserRole(roleTarget.id, newRoleCode);
+      message.success(`${roleTarget.fullName} is now ${ROLE_LABELS[newRoleCode]}.`);
+      closeChangeRole();
+      onChanged();
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setSavingRole(false);
+    }
   };
 
   /**
-   * Asks for confirmation, then shows a temporary password for the user.
+   * Asks for confirmation, then resets the password and shows the temporary one.
    * @param {import('../../utils/types.js').User} user - Target user.
    * @returns {void}
    */
@@ -73,8 +79,15 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
       content:
         'A temporary password will be created. They must change it the next time they sign in.',
       okText: 'Reset password',
-      onOk: () =>
-        setTemporaryPassword({ fullName: user.fullName, value: generateTemporaryPassword() }),
+      onOk: async () => {
+        try {
+          const result = await resetUserPassword(user.id);
+
+          setTemporaryPassword({ fullName: user.fullName, value: result.temporaryPassword });
+        } catch (error) {
+          message.error(error.message);
+        }
+      },
     });
   };
 
@@ -85,6 +98,7 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
    */
   const confirmToggleStatus = (user) => {
     const isActive = user.status === USER_STATUS.ACTIVE;
+
     modal.confirm({
       title: `${isActive ? 'Deactivate' : 'Reactivate'} ${user.fullName}?`,
       content: isActive
@@ -92,9 +106,14 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
         : 'They will be able to sign in again.',
       okText: isActive ? 'Deactivate' : 'Reactivate',
       okButtonProps: { danger: isActive },
-      onOk: () => {
-        onUpdateUser(user.id, { status: isActive ? USER_STATUS.DEACTIVATED : USER_STATUS.ACTIVE });
-        message.success(`${user.fullName} ${isActive ? 'deactivated' : 'reactivated'}.`);
+      onOk: async () => {
+        try {
+          await changeUserStatus(user.id, isActive ? USER_STATUS.DEACTIVATED : USER_STATUS.ACTIVE);
+          message.success(`${user.fullName} ${isActive ? 'deactivated' : 'reactivated'}.`);
+          onChanged();
+        } catch (error) {
+          message.error(error.message);
+        }
       },
     });
   };
@@ -114,10 +133,9 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
     },
     {
       title: 'Position',
-      dataIndex: 'positionId',
-      key: 'positionId',
+      dataIndex: 'positionName',
+      key: 'positionName',
       width: 180,
-      render: (positionId) => getPositionName(positionId),
     },
     {
       title: 'Role',
@@ -139,6 +157,7 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
       width: 360,
       render: (_value, user) => {
         const isSelf = user.id === currentUser.id;
+
         return (
           <Flex gap={0}>
             <Button type="link" size="small" disabled={isSelf} onClick={() => openChangeRole(user)}>
@@ -191,6 +210,7 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
         rowKey="id"
         columns={columns}
         dataSource={visibleUsers}
+        loading={loading}
         pagination={{ pageSize: 20, hideOnSinglePage: true }}
         scroll={{ x: 900 }}
       />
@@ -198,15 +218,14 @@ export const AllUsersTable = ({ users, onUpdateUser }) => {
         title={roleTarget ? `Change role for ${roleTarget.fullName}` : 'Change role'}
         open={Boolean(roleTarget)}
         okText="Save role"
-        okButtonProps={{ disabled: newRoleCode === roleTarget?.roleCode }}
+        okButtonProps={{ loading: savingRole, disabled: newRoleCode === roleTarget?.roleCode }}
         onOk={handleSaveRole}
         onCancel={closeChangeRole}
         destroyOnHidden
       >
         <Flex vertical gap={8}>
           <Typography.Text type="secondary">
-            Roles control access. The position ({getPositionName(roleTarget?.positionId)}) stays the
-            same.
+            Roles control access. The position ({roleTarget?.positionName}) stays the same.
           </Typography.Text>
           <Select
             options={ROLE_OPTIONS}

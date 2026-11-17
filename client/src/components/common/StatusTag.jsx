@@ -11,6 +11,7 @@ import { STATUS_TAGS } from '../../utils/constants.js';
  */
 export const StatusTag = ({ status, label }) => {
   const config = STATUS_TAGS[status] || { label: status, color: 'default' };
+
   return (
     <Tag color={config.color} variant="filled" style={{ marginInlineEnd: 0, fontWeight: 600 }}>
       {label || config.label}

@@ -23,8 +23,11 @@
  * @property {string} fullName - Full name.
  * @property {string} email - Email address.
  * @property {RoleCode} roleCode - System role.
+ * @property {number} positionId - Position ID.
  * @property {string} positionName - School position label.
+ * @property {'active'} status - Always active for a signed-in user.
  * @property {boolean} mustChangePassword - True after an admin password reset.
+ * @property {string | null} lastLoginAt - ISO timestamp of the last sign-in.
  */
 
 /**

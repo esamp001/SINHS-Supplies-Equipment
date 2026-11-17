@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Button, Col, Flex, Form, Input, Row, Select, Tag, Typography } from 'antd';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Col, Flex, Form, Input, Row, Select, Tag, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
 import registerHeroUrl from '../../assets/images/registerHero.svg';
 import { AuthSplitLayout } from '../../components/layout/AuthSplitLayout.jsx';
-import { POSITION_OPTIONS, STATIC_USERS } from '../../data/staticData.js';
+import { register } from '../../api/auth.api.js';
+import { listPositions } from '../../api/lookups.api.js';
 import { PATHS } from '../../routes/navConfig.js';
 import { AUTH_ASIDE_STYLES, headingStyle } from '../../theme/sharedStyles.js';
 import { BRAND_COLORS, MIN_PASSWORD_LENGTH } from '../../utils/constants.js';
@@ -114,7 +115,8 @@ const RegistrationSubmitted = ({ onShowForm }) => (
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Validates the registration form (prototype: also checks the demo accounts for duplicates).
+ * Validates the registration form in the browser for quick feedback. The server validates again
+ * and also checks that the username and email aren't already used.
  * @param {RegisterFormData} data - Form values.
  * @returns {Object<string, string>} Error message per field; empty when valid.
  */
@@ -123,28 +125,35 @@ const validateForm = (data) => {
   const username = data.username.trim();
   const email = data.email.trim();
 
-  if (!data.fullName.trim()) errors.fullName = 'Enter your full name';
-  if (!data.positionId) errors.positionId = 'Select your position';
-
-  if (!username) errors.username = 'Choose a username';
-  else if (STATIC_USERS.some((user) => user.username === username)) {
-    errors.username = 'Username is already taken';
+  if (!data.fullName.trim()) {
+    errors.fullName = 'Enter your full name';
   }
 
-  if (!email) errors.email = 'Enter your email';
-  else if (!EMAIL_PATTERN.test(email)) errors.email = 'Enter a valid email';
-  else if (STATIC_USERS.some((user) => user.email === email)) {
-    errors.email = 'Email is already registered';
+  if (!data.positionId) {
+    errors.positionId = 'Select your position';
   }
 
-  if (!data.password) errors.password = 'Enter a password';
-  else if (data.password.length < MIN_PASSWORD_LENGTH) {
+  if (!username) {
+    errors.username = 'Choose a username';
+  }
+
+  if (!email) {
+    errors.email = 'Enter your email';
+  } else if (!EMAIL_PATTERN.test(email)) {
+    errors.email = 'Enter a valid email';
+  }
+
+  if (!data.password) {
+    errors.password = 'Enter a password';
+  } else if (data.password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `At least ${MIN_PASSWORD_LENGTH} characters`;
   }
 
-  if (!data.confirmPassword) errors.confirmPassword = 'Re-enter your password';
-  else if (data.confirmPassword !== data.password)
+  if (!data.confirmPassword) {
+    errors.confirmPassword = 'Re-enter your password';
+  } else if (data.confirmPassword !== data.password) {
     errors.confirmPassword = 'Passwords do not match';
+  }
 
   return errors;
 };
@@ -163,8 +172,34 @@ export const RegisterPage = () => {
     password: '',
     confirmPassword: '',
   });
+
   const [errors, setErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [positionOptions, setPositionOptions] = useState([]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    listPositions()
+      .then((positions) => {
+        if (!ignore) {
+          setPositionOptions(
+            positions.map((position) => ({ value: position.id, label: position.name })),
+          );
+        }
+      })
+      .catch((error) => {
+        if (!ignore) {
+          setErrorMessage(error.message);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   /**
    * Updates one field and clears its error.
@@ -192,13 +227,34 @@ export const RegisterPage = () => {
   const handlePositionChange = (positionId) => updateField('positionId', positionId);
 
   /**
-   * Validates and, if valid, shows the "submitted" message. Static prototype: nothing is saved.
-   * @returns {void}
+   * Validates, sends the registration to the API and shows the "submitted" message.
+   * Server field errors (e.g. username already taken) are shown under the matching fields.
+   * @returns {Promise<void>}
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setErrorMessage('');
     const validationErrors = validateForm(formData);
+
     setErrors(validationErrors);
-    if (Object.keys(validationErrors).length) return;
+
+    if (Object.keys(validationErrors).length) {
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      await register(formData);
+    } catch (error) {
+      setErrors(error.errors || {});
+      setErrorMessage(Object.keys(error.errors || {}).length ? '' : error.message);
+      setSubmitting(false);
+
+      return;
+    }
+
+    setSubmitting(false);
+
     setFormData({
       fullName: '',
       username: '',
@@ -207,6 +263,7 @@ export const RegisterPage = () => {
       password: '',
       confirmPassword: '',
     });
+
     setSubmitted(true);
   };
 
@@ -242,6 +299,8 @@ export const RegisterPage = () => {
           </Typography.Text>
         </Flex>
 
+        {errorMessage && <Alert type="error" showIcon title={errorMessage} />}
+
         <Form layout="vertical" onFinish={handleSubmit}>
           <Row gutter={16}>
             <Col span={12}>
@@ -272,7 +331,7 @@ export const RegisterPage = () => {
                   id="positionId"
                   value={formData.positionId}
                   onChange={handlePositionChange}
-                  options={POSITION_OPTIONS}
+                  options={positionOptions}
                   showSearch={{ optionFilterProp: 'label' }}
                   placeholder="Select"
                 />
@@ -351,7 +410,7 @@ export const RegisterPage = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Button type="primary" htmlType="submit" size="large" block>
+          <Button type="primary" htmlType="submit" size="large" block loading={submitting}>
             Submit for approval
           </Button>
         </Form>

@@ -4,6 +4,7 @@ import { ROLES } from '../utils/constants.js';
 export const PATHS = Object.freeze({
   LOGIN: '/login',
   REGISTER: '/register',
+  CHANGE_PASSWORD: '/change-password',
   DASHBOARD: '/dashboard',
   ITEMS: '/items',
   STOCK_TRANSACTIONS: '/stock-transactions',

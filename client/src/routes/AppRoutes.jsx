@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppLayout } from '../components/layout/AppLayout.jsx';
+import { ChangePasswordPage } from '../pages/auth/ChangePasswordPage.jsx';
 import { LoginPage } from '../pages/auth/LoginPage.jsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.jsx';
 import { DashboardPage } from '../pages/dashboard/DashboardPage.jsx';
@@ -26,6 +27,7 @@ export const AppRoutes = () => (
     </Route>
 
     <Route element={<ProtectedRoute />}>
+      <Route path={PATHS.CHANGE_PASSWORD} element={<ChangePasswordPage />} />
       <Route element={<AppLayout />}>
         <Route path={PATHS.DASHBOARD} element={<DashboardPage />} />
 

@@ -36,8 +36,15 @@ const LoginAside = () => (
  */
 const validateForm = (data) => {
   const errors = {};
-  if (!data.username.trim()) errors.username = 'Enter your username';
-  if (!data.password) errors.password = 'Enter your password';
+
+  if (!data.username.trim()) {
+    errors.username = 'Enter your username';
+  }
+
+  if (!data.password) {
+    errors.password = 'Enter your password';
+  }
+
   return errors;
 };
 
@@ -50,13 +57,16 @@ export const LoginPage = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     rememberMe: false,
   });
+
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [showForgotNote, setShowForgotNote] = useState(false);
 
   /**
@@ -85,19 +95,34 @@ export const LoginPage = () => {
   const handleRememberChange = (event) => updateField('rememberMe', event.target.checked);
 
   /**
-   * Validates, checks the credentials and redirects on success.
-   * @returns {void}
+   * Validates, signs in through the API and redirects on success. Users who must change their
+   * password (after an admin reset) go to the change-password page first.
+   * @returns {Promise<void>}
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setErrorMessage('');
     const validationErrors = validateForm(formData);
+
     setErrors(validationErrors);
-    if (Object.keys(validationErrors).length) return;
+
+    if (Object.keys(validationErrors).length) {
+      return;
+    }
+
+    setSubmitting(true);
+
     try {
-      signIn(formData);
-      navigate(location.state?.from || PATHS.DASHBOARD, { replace: true });
+      const signedInUser = await signIn(formData);
+
+      const nextPath = signedInUser.mustChangePassword
+        ? PATHS.CHANGE_PASSWORD
+        : location.state?.from || PATHS.DASHBOARD;
+
+      navigate(nextPath, { replace: true });
     } catch (error) {
-      setErrorMessage(error.message);
+      setErrors(error.errors || {});
+      setErrorMessage(Object.keys(error.errors || {}).length ? '' : error.message);
+      setSubmitting(false);
     }
   };
 
@@ -178,7 +203,7 @@ export const LoginPage = () => {
               style={{ marginBottom: 16 }}
             />
           )}
-          <Button type="primary" htmlType="submit" size="large" block>
+          <Button type="primary" htmlType="submit" size="large" block loading={submitting}>
             Sign in
           </Button>
         </Form>
