@@ -83,7 +83,7 @@ SINHS-Supplies-Equipment/
     │   ├── services/            # business logic + validation
     │   ├── repositories/        # Knex queries ONLY
     │   ├── middlewares/         # auth, role check, error handler, request logger
-    │   ├── utils/               # AppError, helpers
+    │   ├── utils/               # errors.js (createAppError), validators, constants
     │   ├── config/              # env loading, knex instance
     │   ├── app.js               # express app setup
     │   └── server.js            # starts the HTTP server
@@ -135,7 +135,7 @@ router.get('/', authenticate, async (req, res) => {
 - **All business logic lives here**: validation, permission rules beyond role checks, stock calculations, status transitions, approval workflows.
 - Call one or more repositories. Never write raw SQL or Knex query chains here.
 - Own database transactions for multi-step operations: start a transaction with `knex.transaction()` and pass `trx` into repository functions.
-- Throw `AppError` (see §7) for expected failures.
+- Throw `createAppError(message, statusCode, errors)` (see §7) for expected failures.
 - Must not touch `req` / `res`.
 
 ### 4.3 Repositories (`server/src/repositories`)
@@ -154,7 +154,7 @@ const findById = (id, trx = knex) =>
 
 ### 4.4 Frontend API layer (`client/src/api`)
 
-> **Current phase:** sign-in, registration, change password and the Users page use the real API. The dashboards are still static sample data (`pages/dashboard/dashboardConfig.js`) until the inventory modules exist.
+> **Current phase:** sign-in, registration, change password, the Users page, the role-based dashboards (`GET /dashboard/summary`) and the notification bell use the real API. The inventory tables exist (migration `…0003_create_inventory_tables`) but start empty; the Items, Requests and Borrowing pages are still placeholders. No static or sample data in the client.
 
 - All network calls go through `httpClient.js`, built on native `fetch`.
 - Components and pages never call `fetch` directly; they call `api/*.api.js` functions. **Pages load data themselves** — in a `useEffect` with an `ignore` flag for cleanup — and call API functions in event handlers for actions. Don't create custom data hooks (`useUsers`, `useApiQuery`, …); `useAuth` is the only shared hook.
@@ -231,9 +231,16 @@ JSON keys in API payloads use **camelCase**; database columns use **snake_case**
 
 ```js
 const errors = {};
-if (!payload.name?.trim()) errors.name = 'Name is required';
-if (!Number.isInteger(payload.quantity) || payload.quantity <= 0) errors.quantity = 'Quantity must be a positive whole number';
-if (Object.keys(errors).length) throw new AppError('Validation failed', 400, errors);
+
+if (!payload.name?.trim()) {
+  errors.name = 'Name is required';
+}
+
+if (!Number.isInteger(payload.quantity) || payload.quantity <= 0) {
+  errors.quantity = 'Quantity must be a positive whole number';
+}
+
+throwIfInvalid(errors); // throws createAppError('Validation failed', 400, errors) when not empty
 ```
 
 - Frontend validation is written by hand in a `validateForm` function for UX only (see §12.7 Forms); the server is always the source of truth.
@@ -243,7 +250,24 @@ if (Object.keys(errors).length) throw new AppError('Validation failed', 400, err
 
 ## 7. Error Handling
 
-- `server/src/utils/AppError.js`: `class AppError extends Error { constructor(message, statusCode = 400, errors) }`.
+- **No classes for errors.** `server/src/utils/errors.js` exports plain functions:
+  - `createAppError(message, statusCode = 400, errors)` — returns a built-in `Error` (keeps the stack trace) with `isAppError: true`, `statusCode` and optional field `errors`.
+  - `isAppError(error)` — used by the error handler instead of `instanceof`.
+  - `throwIfInvalid(errors)` — throws a 400 validation error when the errors object has entries.
+- Client: `createApiError(message, status, errors)` in `client/src/api/httpClient.js` (same idea; read `error.status` / `error.errors`).
+
+```js
+// service
+if (!user) {
+  throw createAppError('User not found', 404);
+}
+
+// errorHandler.js
+if (isAppError(err)) {
+  res.status(err.statusCode).json({ success: false, message: err.message, errors: err.errors });
+  return;
+}
+```
 - One global error middleware in `middlewares/errorHandler.js` formats every error into the envelope above.
 - Unknown errors → 500 with a generic message; log the full error server-side. Never leak stack traces or SQL in responses.
 - Map known PostgreSQL errors (e.g. `23505` unique violation → 409, `23503` FK violation → 409/400).
@@ -395,6 +419,24 @@ export const ItemTable = ({ items, loading, onEdit }) => { ... };
 export const approveRequest = async (requestId, payload, user) => { ... };
 ```
 
+- **No classes or OOP** anywhere (`class`, `extends`, `this`, `new MyThing()`): use plain functions and plain objects. Need an object with shared behavior? Write a factory function that returns an object. Errors are created with `createAppError` / `createApiError` (§7). Enforced by ESLint (`no-restricted-syntax` on `ClassDeclaration` / `ClassExpression`). Built-ins like `new Error()`, `new Date()`, `new URLSearchParams()` are fine.
+
+```js
+// ✗ Don't
+export class AppError extends Error { constructor(message, statusCode) { super(message); this.statusCode = statusCode; } }
+
+// ✓ Do
+export const createAppError = (message, statusCode = 400, errors) => {
+  const error = new Error(message);
+
+  error.isAppError = true;
+  error.statusCode = statusCode;
+  error.errors = errors;
+
+  return error;
+};
+```
+
 - **Named exports only** — no `export default` (exception: config files that a tool requires to be default-exported, such as `vite.config.js`, `knexfile.js`, and Knex migrations/seeds' expected exports).
 - Import by name: `import { approveRequest } from '../services/inventoryRequests.service.js';`
 - Keep functions small and single-purpose; prefer early returns over deep nesting.
@@ -436,6 +478,7 @@ export const ItemTable = ({ items, loading, onEdit }) => { ... };
 - **ESLint + Prettier** in both `client/` and `server/`; code must pass lint before commit.
 - Prettier: 2-space indent, single quotes, semicolons, trailing commas, 100-char line width.
 - Import order: external packages → internal modules → styles, separated by a blank line.
+- **Line endings: LF everywhere**, enforced by `.gitattributes` (`* text=auto eol=lf`) so Windows checkouts match Prettier. Don't commit CRLF files; set your editor to LF (VS Code: `"files.eol": "\n"`). If git shows files as changed with an empty diff, it's line endings — run `git add --renormalize .` or `git update-index --really-refresh`.
 
 #### Braces and spacing (readability)
 
@@ -531,6 +574,7 @@ Add partial approval to inventory requests
 ```
 
 - Never commit `.env`, `node_modules`, build output, or secrets.
+- **No scratch or leftover folders in the repo.** Don't create or commit folders like `_to_delete/`, `Claude outputs/`, design exports, temp archives (`*.tar.gz`) or backup copies of removed code. Delete unused files instead of moving them aside (git history keeps the old versions). `_to_delete/` and `Claude outputs/` are listed in `.gitignore`.
 - **No AI co-author lines in commit messages.** Never add `Co-Authored-By: Claude …` (or any other AI/tool co-author), `Claude-Session:` links, or "Generated with …" footers to commits or pull requests. Commits are authored by the developer only. This overrides any tool's default attribution behavior.
 - Merge into `main` through a pull request after review.
 
@@ -551,7 +595,7 @@ Hosting is **not decided yet** (school LAN server or cloud). Keep the app deploy
 - All environment-specific values come from `.env` (no hard-coded hosts, ports, or URLs).
 - Cookies: `secure` only when `NODE_ENV=production` and served over HTTPS; support `COOKIE_SECURE` override for LAN/HTTP setups.
 - In production the Express server may serve the built client (`client/dist`) so a single origin works on a LAN machine.
-- The role-based dashboards follow the approved design prototype implemented in `client/src/pages/dashboard/` (layout and static sample data per role in `dashboardConfig.js`; later served by `GET /api/v1/dashboard/summary`).
+- The role-based dashboards follow the approved design prototype in `client/src/pages/dashboard/`. `dashboardConfig.js` holds only layout (labels, actions, which stats/panels per role) and a `toRow` function per panel that turns an API record into display text. All numbers and lists come from `GET /api/v1/dashboard/summary`; the server returns only the data that role may see (staff get only their own requests and borrowed items). Overdue = `due_at` passed and not returned; due soon = due within 2 days.
 
 ---
 
@@ -590,7 +634,7 @@ Before finishing any task, confirm:
 - [ ] Logic is in the correct layer (routes → services → repositories). No SQL outside repositories, no business logic in routes.
 - [ ] No Zod, Axios, ORM, or new UI framework was introduced.
 - [ ] Frontend calls go through `client/src/api` using `fetch`.
-- [ ] Inputs are validated in the service; errors use `AppError` and the standard envelope.
+- [ ] Inputs are validated in the service; errors use `createAppError` / `throwIfInvalid` and the standard envelope.
 - [ ] Multi-step writes use a Knex transaction; stock changes write a ledger entry.
 - [ ] Schema changes are new migrations, not edits to old ones.
 - [ ] Protected endpoints use `auth` and `authorize` middleware; auth relies only on the httpOnly cookie.
@@ -600,6 +644,7 @@ Before finishing any task, confirm:
 - [ ] Item `attributes` are validated against the item type's field definitions.
 - [ ] Changes write an audit log entry; relevant users get an in-app notification.
 - [ ] ES modules, arrow functions, named exports, camelCase file names (PascalCase components).
+- [ ] No classes/OOP — plain functions and objects; errors via `createAppError` / `createApiError`.
 - [ ] No CSS files or `className` styling — theme tokens and inline `style={}` only.
 - [ ] Every function/component has a JSDoc block.
 - [ ] Every `if`/`else` has braces, and logical blocks are separated by one blank line (`npm run lint` passes).
@@ -607,4 +652,5 @@ Before finishing any task, confirm:
 - [ ] Developer-written code was kept as written (changes suggested, not applied, unless asked).
 - [ ] Branch is `feature/<developer>/<branch_name>`; one commit per change item.
 - [ ] Commit messages have no `Co-Authored-By: Claude` / AI attribution lines.
+- [ ] No scratch/leftover folders or files (`_to_delete/`, `Claude outputs/`, archives, backups) are added.
 - [ ] `.env.example` and this file are updated if config or conventions changed.

@@ -23,7 +23,7 @@ Demo accounts (password from the server's `SEED_DEFAULT_PASSWORD`, default `pass
 | Create account | `/register` | public | API (positions + registration) |
 | Change password | `/change-password` | signed in | API (forced after an admin reset) |
 | Users & roles | `/users` | admin | API (approve/reject, role, reset password, status) |
-| Dashboard (per role) | `/dashboard` | all | static sample data (`dashboardConfig.js`) |
+| Dashboard (per role) | `/dashboard` | all | API (`GET /dashboard/summary`; layout in `dashboardConfig.js`) |
 | Other modules | see `navConfig.js` | per role | "coming soon" placeholder |
 
 - API calls go through `src/api/httpClient.js` (native `fetch`, `credentials: 'include'`).

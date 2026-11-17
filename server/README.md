@@ -75,5 +75,18 @@ Users page.
 | `PUT /api/v1/users/:id/role` | admin | Change role `{ roleCode }` |
 | `POST /api/v1/users/:id/reset-password` | admin | Returns `{ temporaryPassword }` |
 | `PUT /api/v1/users/:id/status` | admin | `{ status: 'active' \| 'deactivated' }` |
+| `GET /api/v1/dashboard/summary` | signed in | Role-based dashboard numbers and lists (each role gets only its own) |
+| `GET /api/v1/notifications/unread-count` | signed in | Unread in-app notifications for the header bell |
 
 Every write records an `audit_logs` row; registrations and approvals create in-app `notifications`.
+
+## Database tables
+
+| Migration | Tables |
+|-----------|--------|
+| `…0001_create_roles_positions_users` | `roles`, `positions`, `users` |
+| `…0002_create_audit_logs_notifications` | `audit_logs`, `notifications` |
+| `…0003_create_inventory_tables` | `categories`, `units`, `locations`, `item_types`, `item_type_fields`, `items`, `item_units`, `inventory_requests`, `inventory_request_items`, `borrow_records`, `borrow_record_items`, `stock_transactions` |
+
+Inventory tables start empty (no sample data). The dashboards fill in as items, requests and borrow
+records are created. After pulling new migrations, run `npm run migrate`.
