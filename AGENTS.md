@@ -389,7 +389,17 @@ Roles control **permissions**. A user's school **position** (Principal, Teacher 
 ### 12.1 Language & modules
 
 - JavaScript with **ES modules everywhere** (`import`/`export`). Server `package.json` has `"type": "module"`; `knexfile.js`, migrations, and seeds use ES module exports. Include file extensions in relative imports (`./items.service.js`).
-- `async/await` only — no callback chains and **no promise chains**: never use `.then()`, `.catch()` or `.finally()`, in the client or the server (this includes `useEffect` loaders and `response.json()`). Handle errors with `try { await … } catch { … } finally { … }`. Run independent calls together with `await Promise.all([...])`.
+- `async/await` only — no callback chains and **no promise chains**: never use `.then()`, `.catch()` or `.finally()`, in the client or the server (this includes `useEffect` loaders and `response.json()`). Handle errors with `try { await … } catch { … } finally { … }`.
+- **No `Promise.all`** (or `Promise.allSettled` / `Promise.race`): await each call on its own line, one after another, so the flow reads top to bottom:
+
+```js
+// ✗ Don't
+const [result, reconciliation] = await Promise.all([listStockTransactions(query), getReconciliation()]);
+
+// ✓ Do
+const result = await listStockTransactions(query);
+const reconciliation = await getReconciliation();
+```
 - `const` by default, `let` only when reassigned, never `var`. Strict equality (`===`, `!==`).
 
 ### 12.2 Naming
@@ -681,7 +691,7 @@ Before finishing any task, confirm:
 - [ ] Changes write an audit log entry; relevant users get an in-app notification.
 - [ ] ES modules, arrow functions, named exports, camelCase file names (PascalCase components).
 - [ ] No classes/OOP — plain functions and objects; errors via `createAppError` / `createApiError`.
-- [ ] No `.then()` / `.catch()` / `.finally()` chains — `async/await` with `try/catch/finally` (`useEffect` loaders included).
+- [ ] No `.then()` / `.catch()` / `.finally()` chains and no `Promise.all` — `async/await`, one call per line, with `try/catch/finally` (`useEffect` loaders included).
 - [ ] No CSS files or `className` styling — theme tokens and inline `style={}` only.
 - [ ] Every function/component has a JSDoc block.
 - [ ] Every `if`/`else` has braces, and logical blocks are separated by one blank line (`npm run lint` passes).
