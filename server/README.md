@@ -25,7 +25,7 @@ Node.js + Express 5 + Knex + PostgreSQL REST API. Follows `../AGENTS.md`
 
    ```bash
    npm install
-   npm run db:setup            # migrations + roles, positions, demo accounts, sample inventory
+   npm run db:setup            # migrations + roles, positions, demo accounts
    ```
 
    On Windows you can instead double-click **`db\migrateAndSeed.bat`** (or run
@@ -115,9 +115,7 @@ reminders once per borrow record.
 | `…0001_create_roles_positions_users` | `roles`, `positions`, `users` |
 | `…0002_create_audit_logs_notifications` | `audit_logs`, `notifications` |
 | `…0003_create_inventory_tables` | `categories`, `units`, `locations`, `item_types`, `item_type_fields`, `items`, `item_units`, `inventory_requests`, `inventory_request_items`, `borrow_records`, `borrow_record_items`, `stock_transactions` |
-
 | `…0004_extend_master_data_and_notifications` | `is_active` / `created_by` / `updated_by` on master data, `borrow_record_items.remarks`, `notifications.dedupe_key` |
 
-Seed `03_master_data.js` adds categories, units, locations, item types with custom fields and (only
-when there are no items yet) sample items with opening stock written to the ledger. After pulling new
-migrations, run `npm run migrate` (and `npm run seed` for the sample data).
+Categories, units, locations, item types and items are not seeded: create them in the app (Master
+data, Item types & fields, Items). After pulling new migrations, run `npm run migrate`.
