@@ -235,7 +235,12 @@ export const RequestDetailDrawer = ({ requestId, canReview, onChanged, onClose }
               ...(isBorrow
                 ? [{ key: 'due', label: 'Return by', children: formatDateTime(request.dueAt) }]
                 : []),
-              { key: 'purpose', label: 'Purpose', children: request.purpose || '—', span: 2 },
+              {
+                key: 'purpose',
+                label: 'Purpose',
+                children: request.purpose || '—',
+                span: 'filled',
+              },
               {
                 key: 'reviewed',
                 label: 'Reviewed',
