@@ -39,24 +39,34 @@ export const BorrowingPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listBorrowRecords({ ...query, status: query.status === 'all' ? '' : query.status })
-      .then((result) => {
+    /**
+     * Loads the current page of borrow records. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadRecords = async () => {
+      try {
+        const result = await listBorrowRecords({
+          ...query,
+          status: query.status === 'all' ? '' : query.status,
+        });
+
         if (!ignore) {
           setRecords(result.data);
           setMeta(result.meta);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadRecords();
 
     return () => {
       ignore = true;

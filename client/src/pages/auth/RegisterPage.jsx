@@ -182,19 +182,27 @@ export const RegisterPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listPositions()
-      .then((positions) => {
+    /**
+     * Loads the position options for the form. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadPositions = async () => {
+      try {
+        const positions = await listPositions();
+
         if (!ignore) {
           setPositionOptions(
             positions.map((position) => ({ value: position.id, label: position.name })),
           );
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadPositions();
 
     return () => {
       ignore = true;

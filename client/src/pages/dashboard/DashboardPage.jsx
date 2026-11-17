@@ -28,23 +28,30 @@ export const DashboardPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    getDashboardSummary()
-      .then((data) => {
+    /**
+     * Loads the dashboard numbers and lists for this role. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadSummary = async () => {
+      try {
+        const data = await getDashboardSummary();
+
         if (!ignore) {
           setSummary(data);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadSummary();
 
     return () => {
       ignore = true;

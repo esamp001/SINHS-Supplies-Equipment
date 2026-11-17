@@ -35,26 +35,31 @@ export const ItemSelect = ({
   useEffect(() => {
     let ignore = false;
 
-    const timerId = setTimeout(() => {
+    /**
+     * Searches items matching the typed text. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const searchItems = async () => {
       setLoading(true);
 
-      listItems({ ...JSON.parse(filtersKey), search, pageSize: 20 })
-        .then((result) => {
-          if (!ignore) {
-            setItems(result.data);
-          }
-        })
-        .catch(() => {
-          if (!ignore) {
-            setItems([]);
-          }
-        })
-        .finally(() => {
-          if (!ignore) {
-            setLoading(false);
-          }
-        });
-    }, SEARCH_DELAY_MS);
+      try {
+        const result = await listItems({ ...JSON.parse(filtersKey), search, pageSize: 20 });
+
+        if (!ignore) {
+          setItems(result.data);
+        }
+      } catch {
+        if (!ignore) {
+          setItems([]);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    };
+
+    const timerId = setTimeout(searchItems, SEARCH_DELAY_MS);
 
     return () => {
       ignore = true;

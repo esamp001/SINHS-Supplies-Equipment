@@ -89,8 +89,18 @@ export const AuditLogPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([getAuditLogFilters(), listUsers(), listUsers({ status: 'pending' })])
-      .then(([values, users, pendingUsers]) => {
+    /**
+     * Loads the users, actions and record types for the filter dropdowns. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadFilterOptions = async () => {
+      try {
+        const [values, users, pendingUsers] = await Promise.all([
+          getAuditLogFilters(),
+          listUsers(),
+          listUsers({ status: 'pending' }),
+        ]);
+
         if (!ignore) {
           setFilterOptions({
             actions: values.actions,
@@ -98,12 +108,14 @@ export const AuditLogPage = () => {
             users: [...users, ...pendingUsers],
           });
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadFilterOptions();
 
     return () => {
       ignore = true;
@@ -113,24 +125,31 @@ export const AuditLogPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listAuditLogs(query)
-      .then((result) => {
+    /**
+     * Loads the current page of audit log entries. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadEntries = async () => {
+      try {
+        const result = await listAuditLogs(query);
+
         if (!ignore) {
           setEntries(result.data);
           setMeta(result.meta);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadEntries();
 
     return () => {
       ignore = true;

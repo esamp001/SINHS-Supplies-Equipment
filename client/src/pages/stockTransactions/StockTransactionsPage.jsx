@@ -48,25 +48,35 @@ export const StockTransactionsPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([listStockTransactions(query), getReconciliation()])
-      .then(([result, reconciliation]) => {
+    /**
+     * Loads the current page of the ledger and the reconcile check. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadTransactions = async () => {
+      try {
+        const [result, reconciliation] = await Promise.all([
+          listStockTransactions(query),
+          getReconciliation(),
+        ]);
+
         if (!ignore) {
           setTransactions(result.data);
           setMeta(result.meta);
           setMismatches(reconciliation);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadTransactions();
 
     return () => {
       ignore = true;

@@ -31,23 +31,30 @@ export const ItemTypesPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listItemTypes()
-      .then((data) => {
+    /**
+     * Loads the item types with their fields. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadItemTypes = async () => {
+      try {
+        const data = await listItemTypes();
+
         if (!ignore) {
           setItemTypes(data);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadItemTypes();
 
     return () => {
       ignore = true;

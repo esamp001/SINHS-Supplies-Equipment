@@ -116,17 +116,28 @@ export const ReportsPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([listMasterData('categories'), listItemTypes()])
-      .then(([categories, itemTypes]) => {
+    /**
+     * Loads categories and item types for the report filters. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadLookups = async () => {
+      try {
+        const [categories, itemTypes] = await Promise.all([
+          listMasterData('categories'),
+          listItemTypes(),
+        ]);
+
         if (!ignore) {
           setLookups({ categories, itemTypes });
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadLookups();
 
     return () => {
       ignore = true;

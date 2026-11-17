@@ -36,18 +36,26 @@ export const RequestDetailDrawer = ({ requestId, canReview, onChanged, onClose }
 
     let ignore = false;
 
-    getRequest(requestId)
-      .then((data) => {
+    /**
+     * Loads the request with its items. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadRequest = async () => {
+      try {
+        const data = await getRequest(requestId);
+
         if (!ignore) {
           setRequest(data);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadRequest();
 
     return () => {
       ignore = true;

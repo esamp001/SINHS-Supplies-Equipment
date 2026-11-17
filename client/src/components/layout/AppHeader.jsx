@@ -47,16 +47,18 @@ export const AppHeader = ({ onToggleNav }) => {
 
     /**
      * Loads the unread notification count (errors keep the last known count).
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    const loadUnreadCount = () => {
-      getUnreadCount()
-        .then((data) => {
-          if (!ignore) {
-            setUnreadCount(data.count);
-          }
-        })
-        .catch(() => {});
+    const loadUnreadCount = async () => {
+      try {
+        const data = await getUnreadCount();
+
+        if (!ignore) {
+          setUnreadCount(data.count);
+        }
+      } catch {
+        // Keep showing the last known count; the next poll tries again.
+      }
     };
 
     loadUnreadCount();

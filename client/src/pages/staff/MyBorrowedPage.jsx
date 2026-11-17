@@ -29,24 +29,31 @@ export const MyBorrowedPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listBorrowRecords(query)
-      .then((result) => {
+    /**
+     * Loads the current page of the user's borrow records. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadRecords = async () => {
+      try {
+        const result = await listBorrowRecords(query);
+
         if (!ignore) {
           setRecords(result.data);
           setMeta(result.meta);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadRecords();
 
     return () => {
       ignore = true;

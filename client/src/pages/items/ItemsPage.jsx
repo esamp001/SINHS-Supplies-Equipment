@@ -58,22 +58,30 @@ export const ItemsPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([
-      listItemTypes(),
-      listMasterData('units'),
-      listMasterData('categories'),
-      listMasterData('locations'),
-    ])
-      .then(([itemTypes, units, categories, locations]) => {
+    /**
+     * Loads item types, units, categories and locations for filters and forms. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadLookups = async () => {
+      try {
+        const [itemTypes, units, categories, locations] = await Promise.all([
+          listItemTypes(),
+          listMasterData('units'),
+          listMasterData('categories'),
+          listMasterData('locations'),
+        ]);
+
         if (!ignore) {
           setLookups({ itemTypes, units, categories, locations });
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadLookups();
 
     return () => {
       ignore = true;
@@ -83,24 +91,31 @@ export const ItemsPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listItems({ ...query, lowStockOnly: query.lowStockOnly || undefined })
-      .then((result) => {
+    /**
+     * Loads the current page of items. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadItems = async () => {
+      try {
+        const result = await listItems({ ...query, lowStockOnly: query.lowStockOnly || undefined });
+
         if (!ignore) {
           setItems(result.data);
           setMeta(result.meta);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadItems();
 
     return () => {
       ignore = true;

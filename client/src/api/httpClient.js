@@ -62,6 +62,19 @@ const buildUrl = (path, params) => {
 };
 
 /**
+ * Reads a JSON response body, returning an empty object when the body isn't JSON.
+ * @param {Response} response - Fetch response.
+ * @returns {Promise<Object>} Parsed body, or `{}`.
+ */
+const readJson = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+};
+
+/**
  * Sends an API request and returns the `data` from the response envelope.
  * With `withMeta`, returns `{ data, meta }` instead (paginated lists).
  * @param {string} path - Path relative to /api/v1, e.g. "/auth/me".
@@ -91,7 +104,7 @@ export const request = async (path, options = {}) => {
     throw createApiError('Cannot reach the server. Is the API running?', 0);
   }
 
-  const json = await response.json().catch(() => ({}));
+  const json = await readJson(response);
 
   if (response.status === 401 && !skipUnauthorizedHandler) {
     unauthorizedHandler();
@@ -143,7 +156,7 @@ export const download = async (path, params, fallbackName = 'download') => {
   }
 
   if (!response.ok) {
-    const json = await response.json().catch(() => ({}));
+    const json = await readJson(response);
 
     throw createApiError(json.message || 'Download failed.', response.status, json.errors);
   }

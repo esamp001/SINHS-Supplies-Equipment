@@ -31,18 +31,26 @@ export const BorrowRecordDrawer = ({ recordId, canManage, onChanged, onClose }) 
 
     let ignore = false;
 
-    getBorrowRecord(recordId)
-      .then((data) => {
+    /**
+     * Loads the borrow record with its items. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadRecord = async () => {
+      try {
+        const data = await getBorrowRecord(recordId);
+
         if (!ignore) {
           setRecord(data);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadRecord();
 
     return () => {
       ignore = true;

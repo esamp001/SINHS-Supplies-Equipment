@@ -47,22 +47,30 @@ export const ItemDetailDrawer = ({ itemId, refreshKey, onEdit, onChanged, onClos
 
     let ignore = false;
 
-    Promise.all([
-      getItem(itemId),
-      listStockTransactions({ itemId, pageSize: RECENT_TRANSACTION_COUNT }),
-    ])
-      .then(([detail, ledger]) => {
+    /**
+     * Loads the item detail and its recent stock activity. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadItem = async () => {
+      try {
+        const [detail, ledger] = await Promise.all([
+          getItem(itemId),
+          listStockTransactions({ itemId, pageSize: RECENT_TRANSACTION_COUNT }),
+        ]);
+
         if (!ignore) {
           setItem(detail);
           setTransactions(ledger.data);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadItem();
 
     return () => {
       ignore = true;

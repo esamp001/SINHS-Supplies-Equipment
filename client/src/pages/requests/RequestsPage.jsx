@@ -51,24 +51,34 @@ export const RequestsPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listRequests({ ...query, status: query.status === 'all' ? '' : query.status })
-      .then((result) => {
+    /**
+     * Loads the current page of requests. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadRequests = async () => {
+      try {
+        const result = await listRequests({
+          ...query,
+          status: query.status === 'all' ? '' : query.status,
+        });
+
         if (!ignore) {
           setRequests(result.data);
           setMeta(result.meta);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadRequests();
 
     return () => {
       ignore = true;

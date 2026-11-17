@@ -42,24 +42,31 @@ export const AvailableItemsPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    listItems({ ...query, availableOnly: true })
-      .then((result) => {
+    /**
+     * Loads the current page of items in stock. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadItems = async () => {
+      try {
+        const result = await listItems({ ...query, availableOnly: true });
+
         if (!ignore) {
           setItems(result.data);
           setMeta(result.meta);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadItems();
 
     return () => {
       ignore = true;

@@ -20,22 +20,29 @@ export const AuthProvider = ({ children }) => {
 
     setUnauthorizedHandler(() => setUser(null));
 
-    getCurrentUser()
-      .then((currentUser) => {
+    /**
+     * Restores the signed-in user from the auth cookie (GET /auth/me). Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const restoreSession = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+
         if (!ignore) {
           setUser(currentUser);
         }
-      })
-      .catch(() => {
+      } catch {
         if (!ignore) {
           setUser(null);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setInitializing(false);
         }
-      });
+      }
+    };
+
+    restoreSession();
 
     return () => {
       ignore = true;

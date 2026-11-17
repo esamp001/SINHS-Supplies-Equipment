@@ -29,8 +29,18 @@ export const UsersPage = () => {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([listUsers({ status: USER_STATUS.PENDING }), listUsers(), listPositions()])
-      .then(([pending, approved, positions]) => {
+    /**
+     * Loads pending and approved users and the position options. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadUsers = async () => {
+      try {
+        const [pending, approved, positions] = await Promise.all([
+          listUsers({ status: USER_STATUS.PENDING }),
+          listUsers(),
+          listPositions(),
+        ]);
+
         if (ignore) {
           return;
         }
@@ -43,17 +53,18 @@ export const UsersPage = () => {
         );
 
         setErrorMessage('');
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadUsers();
 
     return () => {
       ignore = true;

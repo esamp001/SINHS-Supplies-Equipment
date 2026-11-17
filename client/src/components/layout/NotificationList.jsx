@@ -36,17 +36,25 @@ export const NotificationList = ({ onUnreadCountChange, onOpenLink }) => {
   useEffect(() => {
     let ignore = false;
 
-    listNotifications()
-      .then((data) => {
+    /**
+     * Loads the recent notifications. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadNotifications = async () => {
+      try {
+        const data = await listNotifications();
+
         if (!ignore) {
           setNotifications(data);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      });
+      }
+    };
+
+    loadNotifications();
 
     return () => {
       ignore = true;

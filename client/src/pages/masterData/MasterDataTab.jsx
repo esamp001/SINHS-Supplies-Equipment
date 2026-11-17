@@ -34,23 +34,30 @@ export const MasterDataTab = ({ resource, label, usedByLabel, extraField }) => {
   useEffect(() => {
     let ignore = false;
 
-    listMasterData(resource)
-      .then((data) => {
+    /**
+     * Loads every record of this master data list. Skips state updates after unmount.
+     * @returns {Promise<void>}
+     */
+    const loadRecords = async () => {
+      try {
+        const data = await listMasterData(resource);
+
         if (!ignore) {
           setRecords(data);
           setErrorMessage('');
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!ignore) {
           setErrorMessage(error.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!ignore) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadRecords();
 
     return () => {
       ignore = true;
