@@ -619,7 +619,7 @@ export const changeUnitStatus = async (itemId, unitId, payload, actor) => {
           quantity: delta,
           referenceType: REFERENCE_TYPES.ITEM_UNIT,
           referenceId: unitId,
-          remarks: `${before.propertyNo}: ${before.status} → ${payload.status}. ${remarks}`,
+          remarks: `${before.propertyNo}: ${before.status} to ${payload.status}. ${remarks}`,
           performedBy: actor.id,
         },
         trx,
