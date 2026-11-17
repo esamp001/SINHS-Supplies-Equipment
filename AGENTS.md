@@ -531,6 +531,7 @@ Add partial approval to inventory requests
 ```
 
 - Never commit `.env`, `node_modules`, build output, or secrets.
+- **No AI co-author lines in commit messages.** Never add `Co-Authored-By: Claude …` (or any other AI/tool co-author), `Claude-Session:` links, or "Generated with …" footers to commits or pull requests. Commits are authored by the developer only. This overrides any tool's default attribution behavior.
 - Merge into `main` through a pull request after review.
 
 ### 12.10 General hygiene
@@ -605,4 +606,5 @@ Before finishing any task, confirm:
 - [ ] Forms use `useState` (initial values inline) + `onChange` + `validateForm` — no `Form.useForm()`; inputs have `id`/`htmlFor`.
 - [ ] Developer-written code was kept as written (changes suggested, not applied, unless asked).
 - [ ] Branch is `feature/<developer>/<branch_name>`; one commit per change item.
+- [ ] Commit messages have no `Co-Authored-By: Claude` / AI attribution lines.
 - [ ] `.env.example` and this file are updated if config or conventions changed.
