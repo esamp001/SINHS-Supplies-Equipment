@@ -1,0 +1,19 @@
+# Line endings: store and check out text files with LF on every OS (matches Prettier).
+# Prevents "changed" files whose only difference is CRLF vs LF on Windows.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: never convert
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.gz binary
+*.zip binary
