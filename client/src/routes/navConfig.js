@@ -23,16 +23,6 @@ export const PATHS = Object.freeze({
 const { ADMIN, CUSTODIAN, STAFF } = ROLES;
 
 /**
- * Pages not built yet (rendered with the "coming soon" placeholder) and who can open them.
- * The server enforces every permission; this only controls navigation (AGENTS.md §10).
- * @type {Array<{ path: string, title: string, roles: string[] }>}
- */
-export const PLACEHOLDER_PAGES = [
-  { path: PATHS.REPORTS, title: 'Reports', roles: [ADMIN, CUSTODIAN] },
-  { path: PATHS.AUDIT_LOG, title: 'Audit log', roles: [ADMIN] },
-];
-
-/**
  * Side navigation groups per role (from the design prototype).
  * @type {Object<string, Array<{ label: string, items: Array<{ path: string, label: string }> }>>}
  */
