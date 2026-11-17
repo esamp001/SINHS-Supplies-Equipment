@@ -28,13 +28,8 @@ const { ADMIN, CUSTODIAN, STAFF } = ROLES;
  * @type {Array<{ path: string, title: string, roles: string[] }>}
  */
 export const PLACEHOLDER_PAGES = [
-  { path: PATHS.REQUESTS, title: 'Requests', roles: [ADMIN, CUSTODIAN] },
-  { path: PATHS.BORROWING, title: 'Borrowing & returns', roles: [ADMIN, CUSTODIAN] },
   { path: PATHS.REPORTS, title: 'Reports', roles: [ADMIN, CUSTODIAN] },
   { path: PATHS.AUDIT_LOG, title: 'Audit log', roles: [ADMIN] },
-  { path: PATHS.AVAILABLE_ITEMS, title: 'Available items', roles: [STAFF] },
-  { path: PATHS.MY_REQUESTS, title: 'My requests', roles: [STAFF] },
-  { path: PATHS.MY_BORROWED, title: 'My borrowed items', roles: [STAFF] },
 ];
 
 /**

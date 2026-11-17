@@ -4,12 +4,17 @@ import { AppLayout } from '../components/layout/AppLayout.jsx';
 import { ChangePasswordPage } from '../pages/auth/ChangePasswordPage.jsx';
 import { LoginPage } from '../pages/auth/LoginPage.jsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.jsx';
+import { BorrowingPage } from '../pages/borrowing/BorrowingPage.jsx';
 import { DashboardPage } from '../pages/dashboard/DashboardPage.jsx';
 import { ItemsPage } from '../pages/items/ItemsPage.jsx';
 import { ItemTypesPage } from '../pages/itemTypes/ItemTypesPage.jsx';
 import { MasterDataPage } from '../pages/masterData/MasterDataPage.jsx';
 import { ComingSoonPage } from '../pages/misc/ComingSoonPage.jsx';
 import { NotFoundPage } from '../pages/misc/NotFoundPage.jsx';
+import { RequestsPage } from '../pages/requests/RequestsPage.jsx';
+import { AvailableItemsPage } from '../pages/staff/AvailableItemsPage.jsx';
+import { MyBorrowedPage } from '../pages/staff/MyBorrowedPage.jsx';
+import { MyRequestsPage } from '../pages/staff/MyRequestsPage.jsx';
 import { StockTransactionsPage } from '../pages/stockTransactions/StockTransactionsPage.jsx';
 import { UsersPage } from '../pages/users/UsersPage.jsx';
 import { ROLES } from '../utils/constants.js';
@@ -44,6 +49,14 @@ export const AppRoutes = () => (
           <Route path={PATHS.ITEMS} element={<ItemsPage />} />
           <Route path={PATHS.STOCK_TRANSACTIONS} element={<StockTransactionsPage />} />
           <Route path={PATHS.ITEM_TYPES} element={<ItemTypesPage />} />
+          <Route path={PATHS.REQUESTS} element={<RequestsPage />} />
+          <Route path={PATHS.BORROWING} element={<BorrowingPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={[ROLES.STAFF]} />}>
+          <Route path={PATHS.AVAILABLE_ITEMS} element={<AvailableItemsPage />} />
+          <Route path={PATHS.MY_REQUESTS} element={<MyRequestsPage />} />
+          <Route path={PATHS.MY_BORROWED} element={<MyBorrowedPage />} />
         </Route>
 
         {PLACEHOLDER_PAGES.map((page) => (
