@@ -19,21 +19,16 @@ import {
  * @returns {Promise<DashboardSummary>} Summary.
  */
 const getAdminSummary = async () => {
-  const [
-    pendingAccounts,
-    pendingRequests,
-    lowStockItems,
-    overdueEquipment,
-    pendingAccountRows,
-    lowStockRows,
-  ] = await Promise.all([
-    dashboardRepository.countUsersByStatus(USER_STATUS.PENDING),
-    dashboardRepository.countRequests({ statuses: [REQUEST_STATUS.PENDING] }),
-    dashboardRepository.countLowStockItems(),
-    dashboardRepository.countOverdueBorrows({}),
-    dashboardRepository.listPendingUsers(DASHBOARD_LIST_LIMIT),
-    dashboardRepository.listLowStockItems(DASHBOARD_LIST_LIMIT),
-  ]);
+  const pendingAccounts = await dashboardRepository.countUsersByStatus(USER_STATUS.PENDING);
+
+  const pendingRequests = await dashboardRepository.countRequests({
+    statuses: [REQUEST_STATUS.PENDING],
+  });
+
+  const lowStockItems = await dashboardRepository.countLowStockItems();
+  const overdueEquipment = await dashboardRepository.countOverdueBorrows({});
+  const pendingAccountRows = await dashboardRepository.listPendingUsers(DASHBOARD_LIST_LIMIT);
+  const lowStockRows = await dashboardRepository.listLowStockItems(DASHBOARD_LIST_LIMIT);
 
   return {
     stats: { pendingAccounts, pendingRequests, lowStockItems, overdueEquipment },
@@ -46,24 +41,26 @@ const getAdminSummary = async () => {
  * @returns {Promise<DashboardSummary>} Summary.
  */
 const getCustodianSummary = async () => {
-  const [
-    requestsToReview,
-    readyToRelease,
-    lowStockItems,
-    overdueEquipment,
-    requestRows,
-    overdueRows,
-  ] = await Promise.all([
-    dashboardRepository.countRequests({ statuses: [REQUEST_STATUS.PENDING] }),
-    dashboardRepository.countRequests({ statuses: [REQUEST_STATUS.APPROVED] }),
-    dashboardRepository.countLowStockItems(),
-    dashboardRepository.countOverdueBorrows({}),
-    dashboardRepository.listRecentRequests({
-      statuses: [REQUEST_STATUS.PENDING, REQUEST_STATUS.APPROVED],
-      limit: DASHBOARD_LIST_LIMIT,
-    }),
-    dashboardRepository.listActiveBorrows({ overdueOnly: true, limit: DASHBOARD_LIST_LIMIT }),
-  ]);
+  const requestsToReview = await dashboardRepository.countRequests({
+    statuses: [REQUEST_STATUS.PENDING],
+  });
+
+  const readyToRelease = await dashboardRepository.countRequests({
+    statuses: [REQUEST_STATUS.APPROVED],
+  });
+
+  const lowStockItems = await dashboardRepository.countLowStockItems();
+  const overdueEquipment = await dashboardRepository.countOverdueBorrows({});
+
+  const requestRows = await dashboardRepository.listRecentRequests({
+    statuses: [REQUEST_STATUS.PENDING, REQUEST_STATUS.APPROVED],
+    limit: DASHBOARD_LIST_LIMIT,
+  });
+
+  const overdueRows = await dashboardRepository.listActiveBorrows({
+    overdueOnly: true,
+    limit: DASHBOARD_LIST_LIMIT,
+  });
 
   return {
     stats: { requestsToReview, readyToRelease, lowStockItems, overdueEquipment },
@@ -77,21 +74,32 @@ const getCustodianSummary = async () => {
  * @returns {Promise<DashboardSummary>} Summary.
  */
 const getStaffSummary = async (userId) => {
-  const [
-    myPendingRequests,
-    myApprovedRequests,
-    myBorrowedItems,
-    myDueSoon,
-    myRequestRows,
-    myBorrowedRows,
-  ] = await Promise.all([
-    dashboardRepository.countRequests({ statuses: [REQUEST_STATUS.PENDING], requestedBy: userId }),
-    dashboardRepository.countRequests({ statuses: [REQUEST_STATUS.APPROVED], requestedBy: userId }),
-    dashboardRepository.countActiveBorrows({ borrowerId: userId }),
-    dashboardRepository.countDueSoonBorrows({ borrowerId: userId, days: DUE_SOON_DAYS }),
-    dashboardRepository.listRecentRequests({ requestedBy: userId, limit: DASHBOARD_LIST_LIMIT }),
-    dashboardRepository.listActiveBorrows({ borrowerId: userId, limit: DASHBOARD_LIST_LIMIT }),
-  ]);
+  const myPendingRequests = await dashboardRepository.countRequests({
+    statuses: [REQUEST_STATUS.PENDING],
+    requestedBy: userId,
+  });
+
+  const myApprovedRequests = await dashboardRepository.countRequests({
+    statuses: [REQUEST_STATUS.APPROVED],
+    requestedBy: userId,
+  });
+
+  const myBorrowedItems = await dashboardRepository.countActiveBorrows({ borrowerId: userId });
+
+  const myDueSoon = await dashboardRepository.countDueSoonBorrows({
+    borrowerId: userId,
+    days: DUE_SOON_DAYS,
+  });
+
+  const myRequestRows = await dashboardRepository.listRecentRequests({
+    requestedBy: userId,
+    limit: DASHBOARD_LIST_LIMIT,
+  });
+
+  const myBorrowedRows = await dashboardRepository.listActiveBorrows({
+    borrowerId: userId,
+    limit: DASHBOARD_LIST_LIMIT,
+  });
 
   return {
     stats: { myPendingRequests, myApprovedRequests, myBorrowedItems, myDueSoon },

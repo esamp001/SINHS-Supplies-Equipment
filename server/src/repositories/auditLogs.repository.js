@@ -118,10 +118,8 @@ export const list = async (filters, pagination, trx = db) => {
  * @returns {Promise<{ actions: string[], entityTypes: string[] }>} Distinct values.
  */
 export const listFilterValues = async (trx = db) => {
-  const [actions, entityTypes] = await Promise.all([
-    trx('audit_logs').distinct('action').orderBy('action'),
-    trx('audit_logs').distinct('entity_type').orderBy('entity_type'),
-  ]);
+  const actions = await trx('audit_logs').distinct('action').orderBy('action');
+  const entityTypes = await trx('audit_logs').distinct('entity_type').orderBy('entity_type');
 
   return {
     actions: actions.map((row) => row.action),

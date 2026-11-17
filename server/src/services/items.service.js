@@ -121,10 +121,10 @@ export const getItem = async (id) => {
     throw createAppError('Item not found', 404);
   }
 
-  const [fields, units] = await Promise.all([
-    itemTypesRepository.listFieldsByTypeIds([item.itemTypeId]),
-    item.trackingMode === TRACKING_MODES.UNIT ? itemsRepository.listUnits(id) : [],
-  ]);
+  const fields = await itemTypesRepository.listFieldsByTypeIds([item.itemTypeId]);
+
+  const units =
+    item.trackingMode === TRACKING_MODES.UNIT ? await itemsRepository.listUnits(id) : [];
 
   return { ...item, fields, units };
 };

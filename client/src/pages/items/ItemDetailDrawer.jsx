@@ -53,10 +53,8 @@ export const ItemDetailDrawer = ({ itemId, refreshKey, onEdit, onChanged, onClos
      */
     const loadItem = async () => {
       try {
-        const [detail, ledger] = await Promise.all([
-          getItem(itemId),
-          listStockTransactions({ itemId, pageSize: RECENT_TRANSACTION_COUNT }),
-        ]);
+        const detail = await getItem(itemId);
+        const ledger = await listStockTransactions({ itemId, pageSize: RECENT_TRANSACTION_COUNT });
 
         if (!ignore) {
           setItem(detail);

@@ -54,10 +54,8 @@ export const StockTransactionsPage = () => {
      */
     const loadTransactions = async () => {
       try {
-        const [result, reconciliation] = await Promise.all([
-          listStockTransactions(query),
-          getReconciliation(),
-        ]);
+        const result = await listStockTransactions(query);
+        const reconciliation = await getReconciliation();
 
         if (!ignore) {
           setTransactions(result.data);

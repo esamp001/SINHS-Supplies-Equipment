@@ -248,11 +248,13 @@ export const returnItems = async (id, payload, actor) => {
 export const sendBorrowReminders = async () => {
   const tomorrow = addDays(toManilaDate(), 1);
 
-  const [dueSoon, overdue, custodianIds] = await Promise.all([
-    borrowRecordsRepository.listDueBetween({ fromDate: tomorrow, toDate: tomorrow }),
-    borrowRecordsRepository.listOverdue(),
-    usersRepository.listActiveIdsByRole(ROLES.CUSTODIAN),
-  ]);
+  const dueSoon = await borrowRecordsRepository.listDueBetween({
+    fromDate: tomorrow,
+    toDate: tomorrow,
+  });
+
+  const overdue = await borrowRecordsRepository.listOverdue();
+  const custodianIds = await usersRepository.listActiveIdsByRole(ROLES.CUSTODIAN);
 
   for (const record of dueSoon) {
     await notificationsRepository.createForUsers([record.borrowerId], {

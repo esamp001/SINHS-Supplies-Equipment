@@ -122,10 +122,8 @@ export const ReportsPage = () => {
      */
     const loadLookups = async () => {
       try {
-        const [categories, itemTypes] = await Promise.all([
-          listMasterData('categories'),
-          listItemTypes(),
-        ]);
+        const categories = await listMasterData('categories');
+        const itemTypes = await listItemTypes();
 
         if (!ignore) {
           setLookups({ categories, itemTypes });

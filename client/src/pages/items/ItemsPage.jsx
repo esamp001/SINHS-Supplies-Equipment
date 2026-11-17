@@ -64,12 +64,10 @@ export const ItemsPage = () => {
      */
     const loadLookups = async () => {
       try {
-        const [itemTypes, units, categories, locations] = await Promise.all([
-          listItemTypes(),
-          listMasterData('units'),
-          listMasterData('categories'),
-          listMasterData('locations'),
-        ]);
+        const itemTypes = await listItemTypes();
+        const units = await listMasterData('units');
+        const categories = await listMasterData('categories');
+        const locations = await listMasterData('locations');
 
         if (!ignore) {
           setLookups({ itemTypes, units, categories, locations });

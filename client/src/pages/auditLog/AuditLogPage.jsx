@@ -95,11 +95,9 @@ export const AuditLogPage = () => {
      */
     const loadFilterOptions = async () => {
       try {
-        const [values, users, pendingUsers] = await Promise.all([
-          getAuditLogFilters(),
-          listUsers(),
-          listUsers({ status: 'pending' }),
-        ]);
+        const values = await getAuditLogFilters();
+        const users = await listUsers();
+        const pendingUsers = await listUsers({ status: 'pending' });
 
         if (!ignore) {
           setFilterOptions({

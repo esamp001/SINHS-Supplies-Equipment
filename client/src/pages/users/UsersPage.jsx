@@ -35,11 +35,9 @@ export const UsersPage = () => {
      */
     const loadUsers = async () => {
       try {
-        const [pending, approved, positions] = await Promise.all([
-          listUsers({ status: USER_STATUS.PENDING }),
-          listUsers(),
-          listPositions(),
-        ]);
+        const pending = await listUsers({ status: USER_STATUS.PENDING });
+        const approved = await listUsers();
+        const positions = await listPositions();
 
         if (ignore) {
           return;
