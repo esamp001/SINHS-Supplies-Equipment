@@ -157,7 +157,7 @@ const findById = (id, trx = knex) =>
 > **Current phase:** every module uses the real API: auth, Users, dashboards, notifications (bell list + daily borrow reminders), Master data, Item types & fields, Items (with unit tracking), Stock transactions, Requests (approve/reject/release), Borrowing & returns, Reports (Excel/PDF) and the Audit log, plus the staff pages (Available items, My requests, My borrowed items). Master data, item types and items are created in the app (seeds only add roles, positions and demo accounts); there is no static or sample data in the client.
 
 - All network calls go through `httpClient.js`, built on native `fetch`.
-- Components and pages never call `fetch` directly; they call `api/*.api.js` functions. **Pages load data themselves** — in a `useEffect` with an `ignore` flag for cleanup — and call API functions in event handlers for actions. Don't create custom data hooks (`useUsers`, `useApiQuery`, …); `useAuth` is the only shared hook.
+- Components and pages never call `fetch` directly; they call `api/*.api.js` functions. **Pages load data themselves** — in a `useEffect` with an `ignore` flag for cleanup, using an `async` loader function with `try/catch/finally` (never `.then()`; see §12.6) — and call API functions in event handlers for actions. Don't create custom data hooks (`useUsers`, `useApiQuery`, …); `useAuth` is the only shared hook.
 - `httpClient` responsibilities: base URL from `import.meta.env.VITE_API_URL`, JSON headers, **`credentials: 'include'` on every request** so the auth cookie is sent, parsing the standard response envelope, throwing on `success: false` or non-2xx, and redirecting to login on 401.
 
 ```js
@@ -172,7 +172,7 @@ export async function request(path, { method = 'GET', body, params } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
   if (res.status === 401) onUnauthorized(); // e.g. clear auth context, go to /login
-  const json = await res.json().catch(() => ({}));
+  const json = await readJson(res); // returns {} for a non-JSON body (try/catch inside, no .catch())
   if (!res.ok || json.success === false) throw new Error(json.message || res.statusText);
   return json;
 }
@@ -389,7 +389,7 @@ Roles control **permissions**. A user's school **position** (Principal, Teacher 
 ### 12.1 Language & modules
 
 - JavaScript with **ES modules everywhere** (`import`/`export`). Server `package.json` has `"type": "module"`; `knexfile.js`, migrations, and seeds use ES module exports. Include file extensions in relative imports (`./items.service.js`).
-- `async/await` only — no callback chains or `.then()` chains.
+- `async/await` only — no callback chains and **no promise chains**: never use `.then()`, `.catch()` or `.finally()`, in the client or the server (this includes `useEffect` loaders and `response.json()`). Handle errors with `try { await … } catch { … } finally { … }`. Run independent calls together with `await Promise.all([...])`.
 - `const` by default, `let` only when reassigned, never `var`. Strict equality (`===`, `!==`).
 
 ### 12.2 Naming
@@ -511,6 +511,42 @@ throwIfInvalid(errors);
 
 - Function components with hooks only; one component per file.
 - Pages own their data loading (`useEffect` + `api/*.api.js`); network details stay in `src/api`.
+- **Loading data in `useEffect`:** an effect callback can't be `async`, so declare a named `async` loader inside the effect (with JSDoc), call it, and use an `ignore` flag so a slow response never updates an unmounted component. No `.then()` chains (§12.1).
+
+```jsx
+useEffect(() => {
+  let ignore = false;
+
+  /**
+   * Loads the dashboard numbers and lists for this role. Skips state updates after unmount.
+   * @returns {Promise<void>}
+   */
+  const loadSummary = async () => {
+    try {
+      const data = await getDashboardSummary();
+
+      if (!ignore) {
+        setSummary(data);
+        setErrorMessage('');
+      }
+    } catch (error) {
+      if (!ignore) {
+        setErrorMessage(error.message);
+      }
+    } finally {
+      if (!ignore) {
+        setLoading(false);
+      }
+    }
+  };
+
+  loadSummary();
+
+  return () => {
+    ignore = true;
+  };
+}, [reloadKey]);
+```
 - Always provide `key` props from stable IDs (never array index for dynamic lists).
 - Clean up effects (abort `fetch` with `AbortController` on unmount).
 
@@ -645,6 +681,7 @@ Before finishing any task, confirm:
 - [ ] Changes write an audit log entry; relevant users get an in-app notification.
 - [ ] ES modules, arrow functions, named exports, camelCase file names (PascalCase components).
 - [ ] No classes/OOP — plain functions and objects; errors via `createAppError` / `createApiError`.
+- [ ] No `.then()` / `.catch()` / `.finally()` chains — `async/await` with `try/catch/finally` (`useEffect` loaders included).
 - [ ] No CSS files or `className` styling — theme tokens and inline `style={}` only.
 - [ ] Every function/component has a JSDoc block.
 - [ ] Every `if`/`else` has braces, and logical blocks are separated by one blank line (`npm run lint` passes).
