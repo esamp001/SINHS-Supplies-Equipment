@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Empty, Flex, List, Spin, Typography } from 'antd';
+import { Alert, Button, Empty, Flex, Spin, Typography } from 'antd';
 
 import {
   listNotifications,
@@ -12,10 +12,10 @@ import { formatDateTime } from '../../utils/dateFormat.js';
 const STYLES = {
   root: { width: 360, maxWidth: 'calc(100vw - 32px)' },
   list: { maxHeight: 420, overflowY: 'auto' },
-  item: { cursor: 'pointer', paddingInline: 8, borderRadius: 8 },
+  item: { cursor: 'pointer', padding: '8px 8px', borderRadius: 8 },
   unreadItem: {
     cursor: 'pointer',
-    paddingInline: 8,
+    padding: '8px 8px',
     borderRadius: 8,
     background: BRAND_COLORS.blueSoft,
   },
@@ -97,6 +97,19 @@ export const NotificationList = ({ onUnreadCountChange, onOpenLink }) => {
   };
 
   /**
+   * Opens a notification with the keyboard (Enter or Space), like a click.
+   * @param {import('react').KeyboardEvent<HTMLDivElement>} event - Key event.
+   * @param {import('../../utils/types.js').AppNotification} notification - Focused notification.
+   * @returns {void}
+   */
+  const handleItemKeyDown = (event, notification) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleOpen(notification);
+    }
+  };
+
+  /**
    * Marks every notification as read.
    * @returns {Promise<void>}
    */
@@ -125,29 +138,28 @@ export const NotificationList = ({ onUnreadCountChange, onOpenLink }) => {
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No notifications yet" />
       )}
       {notifications && notifications.length > 0 && (
-        <List
-          style={STYLES.list}
-          dataSource={notifications}
-          renderItem={(notification) => (
-            <List.Item
+        <Flex vertical gap={4} role="list" style={STYLES.list}>
+          {notifications.map((notification) => (
+            <Flex
               key={notification.id}
+              vertical
+              gap={2}
+              role="listitem"
+              tabIndex={0}
               style={notification.isRead ? STYLES.item : STYLES.unreadItem}
               onClick={() => handleOpen(notification)}
+              onKeyDown={(event) => handleItemKeyDown(event, notification)}
             >
-              <Flex vertical gap={2}>
-                <Typography.Text strong={!notification.isRead}>
-                  {notification.title}
-                </Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                  {notification.message}
-                </Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  {formatDateTime(notification.createdAt)}
-                </Typography.Text>
-              </Flex>
-            </List.Item>
-          )}
-        />
+              <Typography.Text strong={!notification.isRead}>{notification.title}</Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                {notification.message}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {formatDateTime(notification.createdAt)}
+              </Typography.Text>
+            </Flex>
+          ))}
+        </Flex>
       )}
     </Flex>
   );
