@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Badge, Button, Flex, Grid, Layout, Tooltip } from 'antd';
+import { Badge, Button, Flex, Grid, Layout, Popover } from 'antd';
 import { BellOutlined, MenuOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 import { getUnreadCount } from '../../api/notifications.api.js';
 import { BrandMark } from '../common/BrandMark.jsx';
+import { NotificationList } from './NotificationList.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
 import { PATHS } from '../../routes/navConfig.js';
 import { NOTIFICATION_POLL_MS, ROLE_LABELS } from '../../utils/constants.js';
@@ -28,7 +29,7 @@ const STYLES = {
 };
 
 /**
- * Top bar: brand, notification bell with unread count, user name/position/role, log out.
+ * Top bar: brand, notification bell (unread count + recent list), user name/position/role, log out.
  * @param {Object} props
  * @param {() => void} props.onToggleNav - Toggles the side navigation (small screens).
  * @returns {JSX.Element}
@@ -36,6 +37,7 @@ const STYLES = {
 export const AppHeader = ({ onToggleNav }) => {
   const { user, signOut } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
   const isWide = Boolean(screens.md);
@@ -67,6 +69,16 @@ export const AppHeader = ({ onToggleNav }) => {
   }, []);
 
   /**
+   * Closes the notification popover and opens a notification's in-app link.
+   * @param {string} link - In-app path.
+   * @returns {void}
+   */
+  const handleOpenNotificationLink = (link) => {
+    setIsNotificationsOpen(false);
+    navigate(link);
+  };
+
+  /**
    * Signs out and returns to the login page.
    * @returns {Promise<void>}
    */
@@ -88,15 +100,27 @@ export const AppHeader = ({ onToggleNav }) => {
         <BrandMark size="small" tagline={isWide ? 'Supplies & Equipment' : ''} />
       </Flex>
       <Flex align="center" gap={isWide ? 16 : 8}>
-        <Tooltip title="Notifications">
-          <Badge count={unreadCount} size="small" color="#E8B71A" style={{ color: '#0F172A' }}>
+        <Badge count={unreadCount} size="small" color="#E8B71A" style={{ color: '#0F172A' }}>
+          <Popover
+            trigger="click"
+            placement="bottomRight"
+            open={isNotificationsOpen}
+            onOpenChange={setIsNotificationsOpen}
+            destroyOnHidden
+            content={
+              <NotificationList
+                onUnreadCountChange={setUnreadCount}
+                onOpenLink={handleOpenNotificationLink}
+              />
+            }
+          >
             <Button
               icon={<BellOutlined />}
               aria-label={`Notifications, ${unreadCount} unread`}
               style={STYLES.button}
             />
-          </Badge>
-        </Tooltip>
+          </Popover>
+        </Badge>
         {isWide && (
           <div style={STYLES.user}>
             <strong style={STYLES.userName}>{user.fullName}</strong>
