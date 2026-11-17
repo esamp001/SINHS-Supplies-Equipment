@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { authenticate, requirePasswordChanged } from '../middlewares/auth.js';
 import { authorize } from '../middlewares/authorize.js';
 import * as usersService from '../services/users.service.js';
-import { AppError } from '../utils/AppError.js';
+import { createAppError } from '../utils/errors.js';
 import { ROLES } from '../utils/constants.js';
 
 /**
@@ -17,13 +17,13 @@ usersRouter.use(authenticate, requirePasswordChanged, authorize(ROLES.ADMIN));
  * Parses the `:id` route parameter.
  * @param {import('express').Request} req - Request.
  * @returns {number} User ID.
- * @throws {AppError} 400 when the ID is not a positive integer.
+ * @throws {import('../utils/errors.js').AppError} 400 when the ID is not a positive integer.
  */
 const parseUserId = (req) => {
   const id = Number(req.params.id);
 
   if (!Number.isInteger(id) || id <= 0) {
-    throw new AppError('Invalid user ID', 400);
+    throw createAppError('Invalid user ID', 400);
   }
 
   return id;

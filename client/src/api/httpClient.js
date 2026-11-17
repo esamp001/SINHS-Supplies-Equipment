@@ -11,22 +11,26 @@ const API_BASE_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1`;
 let unauthorizedHandler = () => {};
 
 /**
- * Error thrown for failed API calls.
+ * @typedef {Error & { status: number, errors: Object<string, string> }} ApiError
  */
-export class ApiError extends Error {
-  /**
-   * Creates an ApiError.
-   * @param {string} message - Message from the server.
-   * @param {number} status - HTTP status code.
-   * @param {Object<string, string>} [errors] - Field errors, e.g. `{ username: 'Already taken' }`.
-   */
-  constructor(message, status, errors) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.errors = errors || {};
-  }
-}
+
+/**
+ * Creates the error thrown for failed API calls. Plain function — no classes (AGENTS.md §12.3).
+ * Uses the built-in Error so the stack trace is kept.
+ * @param {string} message - Message from the server.
+ * @param {number} status - HTTP status code (0 when the server can't be reached).
+ * @param {Object<string, string>} [errors] - Field errors, e.g. `{ username: 'Already taken' }`.
+ * @returns {ApiError} Error to throw.
+ */
+export const createApiError = (message, status, errors) => {
+  const error = new Error(message);
+
+  error.name = 'ApiError';
+  error.status = status;
+  error.errors = errors || {};
+
+  return error;
+};
 
 /**
  * Registers the function called when a request returns 401.
@@ -76,7 +80,7 @@ export const request = async (path, options = {}) => {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new ApiError('Cannot reach the server. Is the API running?', 0);
+    throw createApiError('Cannot reach the server. Is the API running?', 0);
   }
 
   const json = await response.json().catch(() => ({}));
@@ -86,7 +90,7 @@ export const request = async (path, options = {}) => {
   }
 
   if (!response.ok || json.success === false) {
-    throw new ApiError(
+    throw createApiError(
       json.message || 'Something went wrong. Please try again.',
       response.status,
       json.errors,

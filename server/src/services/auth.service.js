@@ -7,7 +7,7 @@ import * as auditLogsRepository from '../repositories/auditLogs.repository.js';
 import * as lookupsRepository from '../repositories/lookups.repository.js';
 import * as notificationsRepository from '../repositories/notifications.repository.js';
 import * as usersRepository from '../repositories/users.repository.js';
-import { AppError, throwIfInvalid } from '../utils/AppError.js';
+import { createAppError, throwIfInvalid } from '../utils/errors.js';
 import {
   AUDIT_ACTIONS,
   BCRYPT_ROUNDS,
@@ -33,7 +33,7 @@ const INVALID_CREDENTIALS = 'Invalid username or password';
  * @param {{ fullName?: string, username?: string, email?: string, positionId?: number, password?: string, confirmPassword?: string }} payload - Request body.
  * @param {string} ipAddress - Client IP for the audit log.
  * @returns {Promise<import('../repositories/users.repository.js').UserRecord>} Created (pending) user.
- * @throws {AppError} 400 with field errors when invalid.
+ * @throws {import('../utils/errors.js').AppError} 400 with field errors when invalid.
  */
 export const register = async (payload, ipAddress) => {
   const { fullName = '', username = '', email = '', positionId, password = '' } = payload;
@@ -146,7 +146,7 @@ export const verifyToken = (token) => {
  * @param {{ username?: string, password?: string }} payload - Request body.
  * @param {string} ipAddress - Client IP for the audit log.
  * @returns {Promise<{ user: import('../repositories/users.repository.js').UserRecord, token: string }>} User and token.
- * @throws {AppError} 400 when fields are missing, 401 for wrong credentials, 403 when the account can't sign in.
+ * @throws {import('../utils/errors.js').AppError} 400 when fields are missing, 401 for wrong credentials, 403 when the account can't sign in.
  */
 export const login = async (payload, ipAddress) => {
   const { username = '', password = '' } = payload;
@@ -166,11 +166,11 @@ export const login = async (payload, ipAddress) => {
   const passwordMatches = account ? await bcrypt.compare(password, account.passwordHash) : false;
 
   if (!account || !passwordMatches) {
-    throw new AppError(INVALID_CREDENTIALS, 401);
+    throw createAppError(INVALID_CREDENTIALS, 401);
   }
 
   if (STATUS_MESSAGES[account.status]) {
-    throw new AppError(STATUS_MESSAGES[account.status], 403);
+    throw createAppError(STATUS_MESSAGES[account.status], 403);
   }
 
   await usersRepository.update(account.id, { last_login_at: db.fn.now() });
@@ -221,7 +221,7 @@ export const findActiveUser = async (userId) => {
  * @param {{ currentPassword?: string, newPassword?: string, confirmPassword?: string }} payload - Request body.
  * @param {string} ipAddress - Client IP.
  * @returns {Promise<import('../repositories/users.repository.js').UserRecord>} Updated user.
- * @throws {AppError} 400 with field errors.
+ * @throws {import('../utils/errors.js').AppError} 400 with field errors.
  */
 export const changePassword = async (userId, payload, ipAddress) => {
   const { currentPassword = '', newPassword = '', confirmPassword = '' } = payload;

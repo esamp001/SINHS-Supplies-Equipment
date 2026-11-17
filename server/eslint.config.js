@@ -44,6 +44,14 @@ export default [
           selector: 'ExportDefaultDeclaration',
           message: 'Use named exports only (AGENTS.md §12.3).',
         },
+        {
+          selector: 'ClassDeclaration',
+          message: 'No classes/OOP — use plain functions (AGENTS.md §12.3).',
+        },
+        {
+          selector: 'ClassExpression',
+          message: 'No classes/OOP — use plain functions (AGENTS.md §12.3).',
+        },
       ],
     },
   },

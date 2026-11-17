@@ -1,4 +1,4 @@
-import { AppError } from '../utils/AppError.js';
+import { isAppError } from '../utils/errors.js';
 
 /** PostgreSQL error codes mapped to safe API errors (AGENTS.md §7). */
 const PG_ERRORS = {
@@ -27,7 +27,7 @@ export const notFound = (req, res) => {
  * @returns {void}
  */
 export const errorHandler = (err, req, res, _next) => {
-  if (err instanceof AppError) {
+  if (isAppError(err)) {
     res.status(err.statusCode).json({ success: false, message: err.message, errors: err.errors });
 
     return;

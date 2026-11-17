@@ -7,7 +7,7 @@ import * as auditLogsRepository from '../repositories/auditLogs.repository.js';
 import * as lookupsRepository from '../repositories/lookups.repository.js';
 import * as notificationsRepository from '../repositories/notifications.repository.js';
 import * as usersRepository from '../repositories/users.repository.js';
-import { AppError, throwIfInvalid } from '../utils/AppError.js';
+import { createAppError, throwIfInvalid } from '../utils/errors.js';
 import {
   AUDIT_ACTIONS,
   BCRYPT_ROUNDS,
@@ -32,11 +32,11 @@ import { isOneOf, isPositiveInt, isRequired } from '../utils/validators.js';
  * Lists users for the Users page. Without a status, returns active and deactivated users.
  * @param {{ status?: string, search?: string }} query - Query parameters.
  * @returns {Promise<UserRecord[]>} Users.
- * @throws {AppError} 400 for an unknown status.
+ * @throws {import('../utils/errors.js').AppError} 400 for an unknown status.
  */
 export const listUsers = async ({ status, search }) => {
   if (status && !isOneOf(status, Object.values(USER_STATUS))) {
-    throw new AppError('Validation failed', 400, { status: 'Unknown status' });
+    throw createAppError('Validation failed', 400, { status: 'Unknown status' });
   }
 
   const statuses = status ? [status] : [USER_STATUS.ACTIVE, USER_STATUS.DEACTIVATED];
@@ -49,13 +49,13 @@ export const listUsers = async ({ status, search }) => {
  * @param {number} userId - User ID.
  * @param {import('knex').Knex.Transaction} trx - Transaction.
  * @returns {Promise<UserRecord>} User.
- * @throws {AppError} 404 when not found.
+ * @throws {import('../utils/errors.js').AppError} 404 when not found.
  */
 const getUserForUpdate = async (userId, trx) => {
   const user = await usersRepository.findByIdForUpdate(userId, trx);
 
   if (!user) {
-    throw new AppError('User not found', 404);
+    throw createAppError('User not found', 404);
   }
 
   return user;
@@ -65,11 +65,11 @@ const getUserForUpdate = async (userId, trx) => {
  * Validates a role code.
  * @param {*} roleCode - Role code from the request.
  * @returns {void}
- * @throws {AppError} 400 when invalid.
+ * @throws {import('../utils/errors.js').AppError} 400 when invalid.
  */
 const assertValidRole = (roleCode) => {
   if (!isOneOf(roleCode, Object.values(ROLES))) {
-    throw new AppError('Validation failed', 400, { roleCode: 'Choose a valid role' });
+    throw createAppError('Validation failed', 400, { roleCode: 'Choose a valid role' });
   }
 };
 
@@ -79,7 +79,7 @@ const assertValidRole = (roleCode) => {
  * @param {{ roleCode?: string, positionId?: number }} payload - Request body.
  * @param {Actor} actor - Admin performing the action.
  * @returns {Promise<UserRecord>} Updated user.
- * @throws {AppError} 400 invalid input, 404 not found, 409 not pending.
+ * @throws {import('../utils/errors.js').AppError} 400 invalid input, 404 not found, 409 not pending.
  */
 export const approveUser = async (userId, payload, actor) => {
   const { roleCode, positionId } = payload;
@@ -87,14 +87,14 @@ export const approveUser = async (userId, payload, actor) => {
   assertValidRole(roleCode);
 
   if (!isPositiveInt(positionId) || !(await lookupsRepository.positionExists(Number(positionId)))) {
-    throw new AppError('Validation failed', 400, { positionId: 'Select a valid position' });
+    throw createAppError('Validation failed', 400, { positionId: 'Select a valid position' });
   }
 
   return db.transaction(async (trx) => {
     const before = await getUserForUpdate(userId, trx);
 
     if (before.status !== USER_STATUS.PENDING) {
-      throw new AppError('Only pending accounts can be approved', 409);
+      throw createAppError('Only pending accounts can be approved', 409);
     }
 
     const roleId = await lookupsRepository.findRoleIdByCode(roleCode, trx);
@@ -147,7 +147,7 @@ export const approveUser = async (userId, payload, actor) => {
  * @param {{ reason?: string }} payload - Request body.
  * @param {Actor} actor - Admin performing the action.
  * @returns {Promise<UserRecord>} Updated user.
- * @throws {AppError} 400 missing reason, 404 not found, 409 not pending.
+ * @throws {import('../utils/errors.js').AppError} 400 missing reason, 404 not found, 409 not pending.
  */
 export const rejectUser = async (userId, payload, actor) => {
   const { reason = '' } = payload;
@@ -158,7 +158,7 @@ export const rejectUser = async (userId, payload, actor) => {
     const before = await getUserForUpdate(userId, trx);
 
     if (before.status !== USER_STATUS.PENDING) {
-      throw new AppError('Only pending accounts can be rejected', 409);
+      throw createAppError('Only pending accounts can be rejected', 409);
     }
 
     await usersRepository.update(
@@ -202,7 +202,7 @@ export const rejectUser = async (userId, payload, actor) => {
  * @param {{ roleCode?: string }} payload - Request body.
  * @param {Actor} actor - Admin performing the action.
  * @returns {Promise<UserRecord>} Updated user.
- * @throws {AppError} 400 invalid role, 404 not found, 409 own account or not approved.
+ * @throws {import('../utils/errors.js').AppError} 400 invalid role, 404 not found, 409 own account or not approved.
  */
 export const changeUserRole = async (userId, payload, actor) => {
   const { roleCode } = payload;
@@ -210,14 +210,14 @@ export const changeUserRole = async (userId, payload, actor) => {
   assertValidRole(roleCode);
 
   if (userId === actor.id) {
-    throw new AppError('You cannot change your own role', 409);
+    throw createAppError('You cannot change your own role', 409);
   }
 
   return db.transaction(async (trx) => {
     const before = await getUserForUpdate(userId, trx);
 
     if (![USER_STATUS.ACTIVE, USER_STATUS.DEACTIVATED].includes(before.status)) {
-      throw new AppError('Only approved accounts can have their role changed', 409);
+      throw createAppError('Only approved accounts can have their role changed', 409);
     }
 
     const roleId = await lookupsRepository.findRoleIdByCode(roleCode, trx);
@@ -253,7 +253,7 @@ const generateTemporaryPassword = () => `Temp-${crypto.randomBytes(6).toString('
  * @param {number} userId - Target user.
  * @param {Actor} actor - Admin performing the action.
  * @returns {Promise<{ temporaryPassword: string }>} Temporary password to give to the user.
- * @throws {AppError} 404 not found, 409 not approved.
+ * @throws {import('../utils/errors.js').AppError} 404 not found, 409 not approved.
  */
 export const resetUserPassword = async (userId, actor) => {
   const temporaryPassword = generateTemporaryPassword();
@@ -263,7 +263,7 @@ export const resetUserPassword = async (userId, actor) => {
     const user = await getUserForUpdate(userId, trx);
 
     if (![USER_STATUS.ACTIVE, USER_STATUS.DEACTIVATED].includes(user.status)) {
-      throw new AppError('Only approved accounts can have their password reset', 409);
+      throw createAppError('Only approved accounts can have their password reset', 409);
     }
 
     await usersRepository.update(
@@ -293,26 +293,26 @@ export const resetUserPassword = async (userId, actor) => {
  * @param {{ status?: string }} payload - Request body.
  * @param {Actor} actor - Admin performing the action.
  * @returns {Promise<UserRecord>} Updated user.
- * @throws {AppError} 400 invalid status, 404 not found, 409 own account or not approved.
+ * @throws {import('../utils/errors.js').AppError} 400 invalid status, 404 not found, 409 own account or not approved.
  */
 export const changeUserStatus = async (userId, payload, actor) => {
   const { status } = payload;
 
   if (!isOneOf(status, [USER_STATUS.ACTIVE, USER_STATUS.DEACTIVATED])) {
-    throw new AppError('Validation failed', 400, {
+    throw createAppError('Validation failed', 400, {
       status: 'Status must be active or deactivated',
     });
   }
 
   if (userId === actor.id) {
-    throw new AppError('You cannot change your own account status', 409);
+    throw createAppError('You cannot change your own account status', 409);
   }
 
   return db.transaction(async (trx) => {
     const before = await getUserForUpdate(userId, trx);
 
     if (![USER_STATUS.ACTIVE, USER_STATUS.DEACTIVATED].includes(before.status)) {
-      throw new AppError('Only approved accounts can be activated or deactivated', 409);
+      throw createAppError('Only approved accounts can be activated or deactivated', 409);
     }
 
     await usersRepository.update(userId, { status, updated_by: actor.id }, trx);

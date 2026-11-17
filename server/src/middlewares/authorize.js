@@ -1,4 +1,4 @@
-import { AppError } from '../utils/AppError.js';
+import { createAppError } from '../utils/errors.js';
 
 /**
  * Allows only users with one of the given roles. Use after `authenticate`.
@@ -9,7 +9,7 @@ export const authorize =
   (...roleCodes) =>
   (req, _res, next) => {
     if (!req.user || !roleCodes.includes(req.user.roleCode)) {
-      throw new AppError('You are not allowed to do this', 403);
+      throw createAppError('You are not allowed to do this', 403);
     }
 
     next();

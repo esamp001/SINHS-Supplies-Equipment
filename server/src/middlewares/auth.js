@@ -1,6 +1,6 @@
 import { ENV } from '../config/env.js';
 import { findActiveUser, verifyToken } from '../services/auth.service.js';
-import { AppError } from '../utils/AppError.js';
+import { createAppError } from '../utils/errors.js';
 
 /**
  * Requires a valid auth cookie. Loads the user, rejects inactive accounts and sets `req.user`.
@@ -8,7 +8,7 @@ import { AppError } from '../utils/AppError.js';
  * @param {import('express').Response} res - Response.
  * @param {import('express').NextFunction} next - Next middleware.
  * @returns {Promise<void>}
- * @throws {AppError} 401 when not signed in or the account is no longer active.
+ * @throws {import('../utils/errors.js').AppError} 401 when not signed in or the account is no longer active.
  */
 export const authenticate = async (req, res, next) => {
   const token = req.cookies?.[ENV.cookieName];
@@ -17,7 +17,7 @@ export const authenticate = async (req, res, next) => {
 
   if (!user) {
     res.clearCookie(ENV.cookieName, { path: '/' });
-    throw new AppError('Not authenticated', 401);
+    throw createAppError('Not authenticated', 401);
   }
 
   req.user = user;
@@ -31,11 +31,11 @@ export const authenticate = async (req, res, next) => {
  * @param {import('express').Response} _res - Response (unused).
  * @param {import('express').NextFunction} next - Next middleware.
  * @returns {void}
- * @throws {AppError} 403 when a password change is required.
+ * @throws {import('../utils/errors.js').AppError} 403 when a password change is required.
  */
 export const requirePasswordChanged = (req, _res, next) => {
   if (req.user?.mustChangePassword) {
-    throw new AppError('Please change your password to continue.', 403);
+    throw createAppError('Please change your password to continue.', 403);
   }
 
   next();
