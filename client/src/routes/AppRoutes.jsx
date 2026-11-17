@@ -5,6 +5,8 @@ import { ChangePasswordPage } from '../pages/auth/ChangePasswordPage.jsx';
 import { LoginPage } from '../pages/auth/LoginPage.jsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.jsx';
 import { DashboardPage } from '../pages/dashboard/DashboardPage.jsx';
+import { ItemTypesPage } from '../pages/itemTypes/ItemTypesPage.jsx';
+import { MasterDataPage } from '../pages/masterData/MasterDataPage.jsx';
 import { ComingSoonPage } from '../pages/misc/ComingSoonPage.jsx';
 import { NotFoundPage } from '../pages/misc/NotFoundPage.jsx';
 import { UsersPage } from '../pages/users/UsersPage.jsx';
@@ -33,6 +35,11 @@ export const AppRoutes = () => (
 
         <Route element={<ProtectedRoute roles={[ROLES.ADMIN]} />}>
           <Route path={PATHS.USERS} element={<UsersPage />} />
+          <Route path={PATHS.MASTER_DATA} element={<MasterDataPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={[ROLES.ADMIN, ROLES.CUSTODIAN]} />}>
+          <Route path={PATHS.ITEM_TYPES} element={<ItemTypesPage />} />
         </Route>
 
         {PLACEHOLDER_PAGES.map((page) => (
