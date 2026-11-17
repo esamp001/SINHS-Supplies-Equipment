@@ -67,7 +67,6 @@ SINHS-Supplies-Equipment/
 │   │   │   ├── httpClient.js    # base fetch helper (cookies, JSON, errors)
 │   │   │   ├── items.api.js
 │   │   │   └── ...
-│   │   ├── data/                # static prototype data (until the API exists)
 │   │   ├── components/          # shared/reusable UI components
 │   │   ├── pages/               # route-level screens (one folder per module)
 │   │   ├── hooks/               # custom hooks (useItems, useAuth, ...)
@@ -121,14 +120,14 @@ React (pages/hooks) ──fetch──▶ REST API
 - Read `req.params`, `req.query`, `req.body`, `req.user` and pass plain values to a service.
 - Send the response with the correct status code.
 - **No business logic, no SQL, no Knex imports.**
-- Wrap async handlers so errors reach the error middleware (e.g. an `asyncHandler` util).
+- The server uses **Express 5**, which forwards errors thrown in async handlers to the error middleware automatically — no `asyncHandler` wrapper needed.
 
 ```js
 // routes/items.routes.js
-router.get('/', auth, asyncHandler(async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   const result = await itemService.listItems(req.query);
   res.json({ success: true, data: result.rows, meta: result.meta });
-}));
+});
 ```
 
 ### 4.2 Services (`server/src/services`)
@@ -155,10 +154,10 @@ const findById = (id, trx = knex) =>
 
 ### 4.4 Frontend API layer (`client/src/api`)
 
-> **Current phase — static prototype:** the client has no `api/` folder or data hooks yet. Shared demo data lives in `client/src/data/staticData.js`, page-specific data is inline in each page, and sign-in checks the demo accounts in memory. Role-based menus and route guards (`routes/navConfig.js`, `ProtectedRoute`) are real. When backend work starts, add the API layer below and replace the static data page by page.
+> **Current phase:** sign-in, registration, change password and the Users page use the real API. The dashboards are still static sample data (`pages/dashboard/dashboardConfig.js`) until the inventory modules exist.
 
 - All network calls go through `httpClient.js`, built on native `fetch`.
-- Components and pages never call `fetch` directly; they use `api/*.api.js` functions (usually via a custom hook).
+- Components and pages never call `fetch` directly; they call `api/*.api.js` functions. **Pages load data themselves** — in a `useEffect` with an `ignore` flag for cleanup — and call API functions in event handlers for actions. Don't create custom data hooks (`useUsers`, `useApiQuery`, …); `useAuth` is the only shared hook.
 - `httpClient` responsibilities: base URL from `import.meta.env.VITE_API_URL`, JSON headers, **`credentials: 'include'` on every request** so the auth cookie is sent, parsing the standard response envelope, throwing on `success: false` or non-2xx, and redirecting to login on 401.
 
 ```js
@@ -438,10 +437,37 @@ export const ItemTable = ({ items, loading, onEdit }) => { ... };
 - Prettier: 2-space indent, single quotes, semicolons, trailing commas, 100-char line width.
 - Import order: external packages → internal modules → styles, separated by a blank line.
 
+#### Braces and spacing (readability)
+
+- **Always use braces** for `if` / `else if` / `else`, even for one line. No single-line `if (x) doThing();`.
+- **One logical block per paragraph:** separate each logical step with **one blank line** — each validation check, each `if` block, each `try`, multi-line statements, and before `return`.
+- Group related one-line `const` declarations together, then a blank line before the next step.
+- Validation follows this exact shape — one field per block, `else if` chains for the same field:
+
+```js
+const errors = {};
+
+if (!isRequired(fullName)) {
+  errors.fullName = 'Enter your full name';
+}
+
+if (!isRequired(username)) {
+  errors.username = 'Choose a username';
+} else if (!isUsername(username)) {
+  errors.username = 'Use 3–50 letters, numbers, dots, underscores or hyphens';
+} else if (await usersRepository.usernameExists(username.trim())) {
+  errors.username = 'Username is already taken';
+}
+
+throwIfInvalid(errors);
+```
+
+- Enforced by ESLint in both projects (`curly: 'all'` and `padding-line-between-statements`); `npx eslint . --fix` applies it automatically.
+
 ### 12.6 React specifics
 
 - Function components with hooks only; one component per file.
-- Keep pages thin; move data logic into hooks and network calls into `src/api`.
+- Pages own their data loading (`useEffect` + `api/*.api.js`); network details stay in `src/api`.
 - Always provide `key` props from stable IDs (never array index for dynamic lists).
 - Clean up effects (abort `fetch` with `AbortController` on unmount).
 
@@ -511,7 +537,7 @@ Add partial approval to inventory requests
 
 - No secrets in code. Use `.env` (never commit it); keep `.env.example` updated:
   - server: `PORT`, `NODE_ENV`, `TZ=Asia/Manila`, `DATABASE_URL` (or `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`), `JWT_SECRET`, `JWT_EXPIRES_IN`, `COOKIE_NAME`, `COOKIE_SECURE`, `CORS_ORIGIN`
-  - client: `VITE_API_URL` (added when the API layer is built)
+  - client: `VITE_API_URL` (leave empty in development — Vite proxies `/api` to `http://localhost:4000`)
 - No `console.log` debugging in committed code; use a logger on the server.
 - No unused variables, imports, or dead code.
 
@@ -575,6 +601,7 @@ Before finishing any task, confirm:
 - [ ] ES modules, arrow functions, named exports, camelCase file names (PascalCase components).
 - [ ] No CSS files or `className` styling — theme tokens and inline `style={}` only.
 - [ ] Every function/component has a JSDoc block.
+- [ ] Every `if`/`else` has braces, and logical blocks are separated by one blank line (`npm run lint` passes).
 - [ ] Forms use `useState` (initial values inline) + `onChange` + `validateForm` — no `Form.useForm()`; inputs have `id`/`htmlFor`.
 - [ ] Developer-written code was kept as written (changes suggested, not applied, unless asked).
 - [ ] Branch is `feature/<developer>/<branch_name>`; one commit per change item.
