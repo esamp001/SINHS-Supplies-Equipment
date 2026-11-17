@@ -191,7 +191,7 @@ export const StockChangeModal = ({ mode, item = null, onSaved, onCancel }) => {
             value={formData.quantity}
             onChange={handleQuantityChange}
             style={{ width: '100%' }}
-            addonAfter={selectedItem?.unitName}
+            suffix={selectedItem?.unitName}
           />
         </Form.Item>
         <Form.Item
