@@ -13,7 +13,11 @@ import { apiRouter } from './routes/index.js';
 export const app = express();
 
 app.set('trust proxy', 'loopback');
-app.use(cors({ origin: ENV.corsOrigin, credentials: true }));
+
+app.use(
+  cors({ origin: ENV.corsOrigin, credentials: true, exposedHeaders: ['Content-Disposition'] }),
+);
+
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 

@@ -168,3 +168,20 @@ export const RETURN_CONDITIONS = Object.freeze({
   DAMAGED: 'damaged',
   LOST: 'lost',
 });
+
+/** School details printed on report exports (AGENTS.md §5). */
+export const SCHOOL = Object.freeze({
+  name: 'San Isidro National High School',
+  location: 'Malilipot, Albay',
+  systemName: 'Supplies & Equipment Management System',
+});
+
+/** Report export formats. */
+export const REPORT_FORMATS = Object.freeze({
+  JSON: 'json',
+  XLSX: 'xlsx',
+  PDF: 'pdf',
+});
+
+/** Safety cap on rows in one report. */
+export const MAX_REPORT_ROWS = 5000;
