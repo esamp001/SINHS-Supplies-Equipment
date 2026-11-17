@@ -29,11 +29,28 @@ export const AUDIT_ACTIONS = Object.freeze({
   PASSWORD_CHANGE: 'password_change',
   ROLE_CHANGE: 'role_change',
   STATUS_CHANGE: 'status_change',
+  DELETE: 'delete',
+  CANCEL: 'cancel',
+  RELEASE: 'release',
+  RETURN: 'return',
+  STOCK_IN: 'stock_in',
+  ADJUSTMENT: 'adjustment',
 });
 
 /** Audit log entity types. */
 export const ENTITY_TYPES = Object.freeze({
   USER: 'user',
+  CATEGORY: 'category',
+  UNIT: 'unit',
+  LOCATION: 'location',
+  POSITION: 'position',
+  ITEM_TYPE: 'item_type',
+  ITEM_TYPE_FIELD: 'item_type_field',
+  ITEM: 'item',
+  ITEM_UNIT: 'item_unit',
+  STOCK_TRANSACTION: 'stock_transaction',
+  REQUEST: 'inventory_request',
+  BORROW_RECORD: 'borrow_record',
 });
 
 /** In-app notification types. */
@@ -41,6 +58,14 @@ export const NOTIFICATION_TYPES = Object.freeze({
   ACCOUNT_REGISTERED: 'account_registered',
   ACCOUNT_APPROVED: 'account_approved',
   ACCOUNT_REJECTED: 'account_rejected',
+  REQUEST_SUBMITTED: 'request_submitted',
+  REQUEST_APPROVED: 'request_approved',
+  REQUEST_PARTIALLY_APPROVED: 'request_partially_approved',
+  REQUEST_REJECTED: 'request_rejected',
+  REQUEST_RELEASED: 'request_released',
+  BORROW_RETURNED: 'borrow_returned',
+  BORROW_DUE_SOON: 'borrow_due_soon',
+  BORROW_OVERDUE: 'borrow_overdue',
 });
 
 /** Minimum password length for registration and password changes. */
@@ -64,3 +89,82 @@ export const DUE_SOON_DAYS = 2;
 
 /** Max rows in each dashboard list panel. */
 export const DASHBOARD_LIST_LIMIT = 5;
+
+/** Application timezone (AGENTS.md §8). */
+export const APP_TIMEZONE = 'Asia/Manila';
+
+/** Default and maximum page sizes for list endpoints (AGENTS.md §5). */
+export const DEFAULT_PAGE_SIZE = 20;
+
+export const MAX_PAGE_SIZE = 100;
+
+/** Item kinds: supplies are consumed, equipment is borrowed and returned. */
+export const ITEM_KINDS = Object.freeze({
+  SUPPLY: 'supply',
+  EQUIPMENT: 'equipment',
+});
+
+/** How an item type's stock is tracked. */
+export const TRACKING_MODES = Object.freeze({
+  QUANTITY: 'quantity',
+  UNIT: 'unit',
+});
+
+/** Data types for custom item type fields. */
+export const FIELD_DATA_TYPES = Object.freeze({
+  TEXT: 'text',
+  NUMBER: 'number',
+  DATE: 'date',
+  BOOLEAN: 'boolean',
+  SELECT: 'select',
+});
+
+/** Where a custom field's value is stored: on the item or on each individual unit. */
+export const FIELD_APPLIES_TO = Object.freeze({
+  ITEM: 'item',
+  UNIT: 'unit',
+});
+
+/** Statuses of individually tracked units (item_units). */
+export const UNIT_STATUS = Object.freeze({
+  AVAILABLE: 'available',
+  BORROWED: 'borrowed',
+  UNDER_REPAIR: 'under_repair',
+  LOST: 'lost',
+  DISPOSED: 'disposed',
+});
+
+/** Stock ledger transaction types. Quantities are signed: + adds stock, - removes it. */
+export const TRANSACTION_TYPES = Object.freeze({
+  STOCK_IN: 'stock_in',
+  STOCK_OUT: 'stock_out',
+  ADJUSTMENT: 'adjustment',
+  BORROW: 'borrow',
+  RETURN: 'return',
+});
+
+/** Ledger reference types (what caused a stock transaction). */
+export const REFERENCE_TYPES = Object.freeze({
+  REQUEST: 'inventory_request',
+  BORROW_RECORD: 'borrow_record',
+  ITEM_UNIT: 'item_unit',
+});
+
+/** Inventory request types. */
+export const REQUEST_TYPES = Object.freeze({
+  SUPPLY: 'supply',
+  BORROW: 'borrow',
+});
+
+/** Borrow record statuses. */
+export const BORROW_STATUS = Object.freeze({
+  BORROWED: 'borrowed',
+  RETURNED: 'returned',
+});
+
+/** Condition of a borrowed item when it comes back. */
+export const RETURN_CONDITIONS = Object.freeze({
+  GOOD: 'good',
+  DAMAGED: 'damaged',
+  LOST: 'lost',
+});

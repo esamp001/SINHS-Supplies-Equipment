@@ -20,6 +20,9 @@ export const DUE_SOON_DAYS = 2;
 /** Unread notification polling interval in milliseconds (AGENTS.md §9). */
 export const NOTIFICATION_POLL_MS = 60000;
 
+/** Default rows per page for server-side paginated tables (AGENTS.md §5). */
+export const DEFAULT_PAGE_SIZE = 20;
+
 /** Minimum password length for registration and password changes. */
 export const MIN_PASSWORD_LENGTH = 8;
 
@@ -79,6 +82,20 @@ export const STATUS_TAGS = Object.freeze({
   lowStock: { label: 'Low stock', color: 'red' },
   active: { label: 'Active', color: 'green' },
   deactivated: { label: 'Deactivated', color: 'default' },
+  inactive: { label: 'Inactive', color: 'default' },
+  inStock: { label: 'In stock', color: 'green' },
+  outOfStock: { label: 'Out of stock', color: 'red' },
+  available: { label: 'Available', color: 'green' },
+  under_repair: { label: 'Under repair', color: 'gold' },
+  lost: { label: 'Lost', color: 'red' },
+  disposed: { label: 'Disposed', color: 'default' },
+  good: { label: 'Good', color: 'green' },
+  damaged: { label: 'Damaged', color: 'gold' },
+  stock_in: { label: 'Stock in', color: 'green' },
+  stock_out: { label: 'Stock out', color: 'blue' },
+  adjustment: { label: 'Adjustment', color: 'purple' },
+  borrow: { label: 'Borrow', color: 'blue' },
+  return: { label: 'Return', color: 'green' },
 });
 
 /** Brand colors (mirrors the design prototype). Prefer theme tokens in components. */
@@ -94,4 +111,95 @@ export const BRAND_COLORS = Object.freeze({
   border: '#E2E8F0',
   text: '#0F172A',
   textMuted: '#475569',
+});
+
+/** Item kinds: supplies are consumed, equipment is borrowed and returned. */
+export const ITEM_KINDS = Object.freeze({
+  SUPPLY: 'supply',
+  EQUIPMENT: 'equipment',
+});
+
+/** Display labels for item kinds. */
+export const ITEM_KIND_LABELS = Object.freeze({
+  [ITEM_KINDS.SUPPLY]: 'Supply',
+  [ITEM_KINDS.EQUIPMENT]: 'Equipment',
+});
+
+/** How an item type's stock is tracked. */
+export const TRACKING_MODES = Object.freeze({
+  QUANTITY: 'quantity',
+  UNIT: 'unit',
+});
+
+/** Display labels for tracking modes. */
+export const TRACKING_MODE_LABELS = Object.freeze({
+  [TRACKING_MODES.QUANTITY]: 'By quantity',
+  [TRACKING_MODES.UNIT]: 'By individual unit',
+});
+
+/** Data types for custom item type fields. */
+export const FIELD_DATA_TYPES = Object.freeze({
+  TEXT: 'text',
+  NUMBER: 'number',
+  DATE: 'date',
+  BOOLEAN: 'boolean',
+  SELECT: 'select',
+});
+
+/** Display labels for field data types. */
+export const FIELD_DATA_TYPE_LABELS = Object.freeze({
+  [FIELD_DATA_TYPES.TEXT]: 'Text',
+  [FIELD_DATA_TYPES.NUMBER]: 'Number',
+  [FIELD_DATA_TYPES.DATE]: 'Date',
+  [FIELD_DATA_TYPES.BOOLEAN]: 'Yes / No',
+  [FIELD_DATA_TYPES.SELECT]: 'Dropdown',
+});
+
+/** Where a custom field's value is stored. */
+export const FIELD_APPLIES_TO = Object.freeze({
+  ITEM: 'item',
+  UNIT: 'unit',
+});
+
+/** Display labels for "applies to". */
+export const FIELD_APPLIES_TO_LABELS = Object.freeze({
+  [FIELD_APPLIES_TO.ITEM]: 'Item',
+  [FIELD_APPLIES_TO.UNIT]: 'Each unit',
+});
+
+/** Statuses of individually tracked units. */
+export const UNIT_STATUS = Object.freeze({
+  AVAILABLE: 'available',
+  BORROWED: 'borrowed',
+  UNDER_REPAIR: 'under_repair',
+  LOST: 'lost',
+  DISPOSED: 'disposed',
+});
+
+/** Stock ledger transaction types. */
+export const TRANSACTION_TYPES = Object.freeze({
+  STOCK_IN: 'stock_in',
+  STOCK_OUT: 'stock_out',
+  ADJUSTMENT: 'adjustment',
+  BORROW: 'borrow',
+  RETURN: 'return',
+});
+
+/** Inventory request types. */
+export const REQUEST_TYPES = Object.freeze({
+  SUPPLY: 'supply',
+  BORROW: 'borrow',
+});
+
+/** Display labels for request types. */
+export const REQUEST_TYPE_LABELS = Object.freeze({
+  [REQUEST_TYPES.SUPPLY]: 'Supply',
+  [REQUEST_TYPES.BORROW]: 'Borrow',
+});
+
+/** Condition of a borrowed item when it is returned. */
+export const RETURN_CONDITIONS = Object.freeze({
+  GOOD: 'good',
+  DAMAGED: 'damaged',
+  LOST: 'lost',
 });

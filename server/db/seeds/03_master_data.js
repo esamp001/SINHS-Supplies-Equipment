@@ -43,7 +43,13 @@ const ITEM_TYPES = [
         isRequired: true,
         appliesTo: 'item',
       },
-      { key: 'gsm', label: 'Weight (gsm)', dataType: 'number', isRequired: false, appliesTo: 'item' },
+      {
+        key: 'gsm',
+        label: 'Weight (gsm)',
+        dataType: 'number',
+        isRequired: false,
+        appliesTo: 'item',
+      },
     ],
   },
   {
@@ -51,7 +57,9 @@ const ITEM_TYPES = [
     kind: 'supply',
     trackingMode: 'quantity',
     maxBorrowDays: null,
-    fields: [{ key: 'color', label: 'Color', dataType: 'text', isRequired: false, appliesTo: 'item' }],
+    fields: [
+      { key: 'color', label: 'Color', dataType: 'text', isRequired: false, appliesTo: 'item' },
+    ],
   },
   {
     name: 'Laptop',
